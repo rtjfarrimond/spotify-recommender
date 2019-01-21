@@ -8,5 +8,3 @@ WORKDIR /usr/local/src/app
 COPY requirements.txt .
 
 RUN pip install -r /usr/local/src/app/requirements.txt
-
-CMD ["python", "app.py"]

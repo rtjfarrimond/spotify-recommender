@@ -1,7 +1,7 @@
 version: '3.5'
 services:
   crawler:
-    build: ./crawler
+    image: spotify-crawler
     container_name: spotify-crawler
     hostname: "spotify-crawler"
     env_file: ./config/crawler.env
@@ -11,3 +11,13 @@ services:
       - python
       - ./app.py
       - acetones
+  crawler-tests:
+    image: spotify-crawler
+    container_name: spotify-crawler-tests
+    volumes:
+      - ./crawler/app:/usr/local/src/app
+    entrypoint:
+      - python
+      - -m
+      - unittest
+      - discover
