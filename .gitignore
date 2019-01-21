@@ -3,3 +3,6 @@
 __pycache__
 *.swp
 config/
+*.mp3
+audio/
+*.cache*
