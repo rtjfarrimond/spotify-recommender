@@ -1,5 +1,7 @@
-# Music Recommender
-The purpose of this application is...
+# Spotify Recommender
+The purpose of this application is to provide content based music
+recomendation using features extracted from 30s track previews available via
+the [Spotify Web API](https://developer.spotify.com/documentation/web-api/).
 
 It consists of the following components:
 
@@ -17,6 +19,8 @@ It consists of the following components:
 
 
 ## Feature extractor:
+* Uses [Keunwoo Choi's CNN](https://github.com/keunwoochoi/transfer_learning_music)
+  for feature extraction.
 * Triggered by event from audio file uploaded to S3.
 * Pulls audio file down, extracts features, stores them in database.
 * Deletes the audio when done.
