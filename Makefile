@@ -20,7 +20,7 @@ delete-cache: init
 	rm -f crawler/app/.cache* || exit 0
 
 clean: init
-	sudo rm -rf crawler/app/audio
+	sudo rm -rf crawler/app/audio || exit 0
 
 init:
 	set -ex
