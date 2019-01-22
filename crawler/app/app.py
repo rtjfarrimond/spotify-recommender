@@ -1,6 +1,4 @@
 from core.playlist_crawler import PlaylistCrawler
-import json
-import wget
 import os
 
 
