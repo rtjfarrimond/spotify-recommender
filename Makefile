@@ -8,6 +8,7 @@ build-crawler: init
 test-all: test-crawler
 
 test-crawler: delete-cache
+	# docker-compose run --rm test-crawler flake8 app/
 	docker-compose run --rm test-crawler
 
 crawl: delete-cache
