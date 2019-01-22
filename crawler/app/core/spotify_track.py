@@ -1,5 +1,5 @@
-import wget
 import os
+import urllib.request
 from core.spotify_artist import SpotifyArtist
 
 
@@ -32,9 +32,8 @@ class SpotifyTrack(object):
         '''
         if not self.preview_url:
             raise ValueError('Track does not define a preview_url.')
-        print(self)
-        filename = wget.download(self.preview_url)
-        os.rename(filename, f'{path}/{self}.mp3')
+        print(f'Downloading preview for: {self}')
+        urllib.request.urlretrieve(self.preview_url, f'{path}/{self}.mp3')
 
     def get_artists_string(self):
         if not self.artists:
