@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rtjfarrimond/spotify-recommender.svg?branch=master)](https://travis-ci.org/rtjfarrimond/spotify-recommender)
+
 # Spotify Recommender
 The purpose of this application is to provide content based music
 recomendation using features extracted from 30s track previews available via
