@@ -3,7 +3,9 @@ services:
   - docker
 
 before_install:
-  - touch config/crawler.env
+  - pwd
+  - ls -l
+  - touch rtjfarrimond/spotify-recommender/config/crawler.env
   - make build-all
 
 script:
