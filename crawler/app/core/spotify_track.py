@@ -1,4 +1,3 @@
-import json
 import wget
 import os
 from core.spotify_artist import SpotifyArtist

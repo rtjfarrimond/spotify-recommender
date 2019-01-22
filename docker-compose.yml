@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.3'
 services:
   crawler:
     image: spotify-crawler
@@ -11,7 +11,7 @@ services:
       - python
       - ./app.py
       - acetones
-  crawler-tests:
+  test-crawler:
     image: spotify-crawler
     container_name: spotify-crawler-tests
     volumes:

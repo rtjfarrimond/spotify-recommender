@@ -1,6 +1,3 @@
-import json
-
-
 class SpotifyArtist(object):
 
     def __init__(self, d):
