@@ -17,7 +17,10 @@ crawl: delete-cache
 	docker-compose run --rm crawler
 
 delete-cache: init
-	rm crawler/app/.cache* || exit 0
+	rm -f crawler/app/.cache* || exit 0
+
+clean: init
+	sudo rm -rf crawler/app/audio || exit 0
 
 init:
 	set -ex
