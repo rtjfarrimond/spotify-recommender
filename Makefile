@@ -8,7 +8,7 @@ build-crawler: init
 test-all: test-crawler
 
 test-crawler: delete-cache
-	docker-compose run --rm crawler-tests
+	docker-compose run --rm test-crawler
 
 crawl: delete-cache
 	docker-compose run --rm crawler
