@@ -1,8 +1,7 @@
-*.env
+.env*
 *.pyc
 __pycache__
 *.swp
-config/
 *.mp3
 audio/
 *.cache*
