@@ -7,4 +7,5 @@ WORKDIR /usr/local/src/app
 
 COPY requirements.txt .
 
+RUN pip install --upgrade pip
 RUN pip install -r /usr/local/src/app/requirements.txt
