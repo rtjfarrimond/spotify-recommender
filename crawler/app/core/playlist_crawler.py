@@ -7,7 +7,7 @@ from core.spotify_track import SpotifyTrack
 class PlaylistCrawler(object):
 
     __sp = None
-    _json = None
+    __first_page = None
     tracks = None
 
     def __init__(self, username, playlist_url, audio_path='./audio'):
@@ -27,12 +27,12 @@ class PlaylistCrawler(object):
         if token:
             self.__sp = spotipy.Spotify(auth=token)
 
-    def load_json(self):
-        ''' Load the json representation of the playlist at `__playlist_url`.
+    def load_first_page(self):
+        ''' Load json of first page of playlist at `__playlist_url`.
         '''
         if not self.__sp:
             self.auth_spotify()
-        self._json = self.__sp.user_playlist_tracks(
+        self.__first_page = self.__sp.user_playlist_tracks(
             'spotify',
             playlist_id=self.__playlist_url)
 
@@ -43,16 +43,24 @@ class PlaylistCrawler(object):
         an array of `SpotifyTrack` objects as an instance variable.
 
         '''
-        if not self._json:
-            self.load_json()
+        def parse_page(page):
+            for item in page['items']:
+                track = item['track']
+                if track['preview_url']:
+                    self.tracks.append(SpotifyTrack.from_json(track))
 
         if not self.tracks:
             self.tracks = []
 
-        for item in self._json['items']:
-            track = item['track']
-            if track['preview_url']:
-                self.tracks.append(SpotifyTrack.from_json(track))
+        if not self.__first_page:
+            self.load_first_page()
+
+        parse_page(self.__first_page)
+        current_page = self.__first_page
+        print(current_page['next'])
+        while current_page['next']:
+            currrent_page = self.__sp.next(current_page)
+            parse_page(current_page)
 
     def download_previews(self):
         if not self.audio_path:
