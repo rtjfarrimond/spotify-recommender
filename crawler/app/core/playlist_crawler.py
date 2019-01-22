@@ -1,7 +1,12 @@
 import spotipy
 import spotipy.util
 import json
+import logging
 from core.spotify_track import SpotifyTrack
+
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class PlaylistCrawler(object):
@@ -43,11 +48,14 @@ class PlaylistCrawler(object):
         an array of `SpotifyTrack` objects as an instance variable.
 
         '''
-        def parse_page(page):
+        def parse_page(page, page_number):
+            logger.info(f'Parsing playlist page {page_number}...')
             for item in page['items']:
                 track = item['track']
                 if track['preview_url']:
                     self.tracks.append(SpotifyTrack.from_json(track))
+
+        logger.info("Parsing preview URLs from playlist...")
 
         if not self.tracks:
             self.tracks = []
@@ -55,12 +63,14 @@ class PlaylistCrawler(object):
         if not self.__first_page:
             self.load_first_page()
 
-        parse_page(self.__first_page)
+        counter = 1
+        parse_page(self.__first_page, counter)
+
         current_page = self.__first_page
-        print(current_page['next'])
         while current_page['next']:
-            currrent_page = self.__sp.next(current_page)
-            parse_page(current_page)
+            counter += 1
+            current_page = self.__sp.next(current_page)
+            parse_page(current_page, counter)
 
     def download_previews(self):
         if not self.audio_path:
@@ -68,6 +78,7 @@ class PlaylistCrawler(object):
         if not self.tracks:
             self.parse_json()
 
+        logger.info("Downloading track previews...")
         for track in self.tracks:
             track.download_preview(self.audio_path)
 
