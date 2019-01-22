@@ -5,10 +5,25 @@ The purpose of this application is to provide content based music
 recomendation using features extracted from 30s track previews available via
 the [Spotify Web API](https://developer.spotify.com/documentation/web-api/).
 
-It consists of the following components:
+## Getting started
+
+1. The services use `.env` files for configuration, which must be created and
+   stored in the `config/` directory. In this directory you will also find
+   templates to create the necessary `.env` files.
+
+1. To build the project, run:
+
+        make build-all
+
+1. To run the playlist crawler, run:
+
+        make crawl
+
+# Components
+The application consists of the following components:
 
 
-## Web crawler:
+## Playlist crawler:
 * Crawls Spotify playlists, gets the 30s preview URL, downloads audio to S3.
 * Uses the [Spotify web API](https://developer.spotify.com/documentation/web-api/quick-start/).
 

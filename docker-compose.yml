@@ -4,7 +4,7 @@ services:
     image: spotify-crawler
     container_name: spotify-crawler
     hostname: "spotify-crawler"
-    env_file: ./config/crawler.env
+    env_file: ./config/.env.crawler
     volumes:
       - ./crawler/app:/usr/local/src/app
     entrypoint:

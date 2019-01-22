@@ -3,8 +3,7 @@ services:
   - docker
 
 before_install:
-  - mkdir config
-  - touch config/crawler.env
+  - touch config/.env.crawler
   - make build-all
 
 script:
