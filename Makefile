@@ -17,7 +17,7 @@ crawl: delete-cache
 	docker-compose run --rm crawler
 
 delete-cache: init
-	find . -name __pycache__ | xargs rm -rf
+	find . -name __pycache__ | sudo xargs rm -rf
 	rm -f crawler/app/.cache* || exit 0
 
 clean: init
