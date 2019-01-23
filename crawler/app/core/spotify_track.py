@@ -1,10 +1,10 @@
 import urllib.request
 import logging
 from core.spotify_artist import SpotifyArtist
-from util.string_utils import escape_forwardslash_in_basename
+from util.string_utils import escape_forwardslash
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -40,7 +40,7 @@ class SpotifyTrack(object):
         logger.info(f'Downloading preview for: {self}')
         urllib.request.urlretrieve(
             self.preview_url,
-            f'{path}/{escape_forwardslash_in_basename(str(self))}.mp3')
+            f'{path}/{escape_forwardslash(str(self))}.mp3')
 
     def get_artists_string(self):
         if not self.artists:

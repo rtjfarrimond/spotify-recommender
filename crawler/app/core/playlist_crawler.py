@@ -5,7 +5,7 @@ import logging
 from core.spotify_track import SpotifyTrack
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
