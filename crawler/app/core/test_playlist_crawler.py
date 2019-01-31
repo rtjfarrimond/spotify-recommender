@@ -1,5 +1,6 @@
 import unittest
 from core.spotify_track import SpotifyTrack
+from core.playlist_crawler import PlaylistCrawler
 
 
 class MockSpotifyTrack(SpotifyTrack):
@@ -18,7 +19,7 @@ class TestPlaylistCrawler(unittest.TestCase):
         self.assertTrue(False)
 
     def test_default_constructor_value_error_when_username_null(self):
-        self.assertTrue(False)
+        self.assertRaises(ValueError, PlaylistCrawler, None, "dummyPlaylist")
 
     def test_default_constructor_value_error_when_playlist_url_null(self):
         self.assertTrue(False)
