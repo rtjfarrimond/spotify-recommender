@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/rtjfarrimond/spotify-recommender.svg?token=Nn6v3ZRfSNqJRZd5pLxd&branch=master)](https://travis-ci.com/rtjfarrimond/spotify-recommender)
+[![CircleCI](https://circleci.com/gh/rtjfarrimond/spotify-recommender/tree/master.svg?style=svg&circle-token=39f17eb33b9e384bec4d842213c7e2c6a3b29693)](https://circleci.com/gh/rtjfarrimond/spotify-recommender/tree/master)
 
 # Spotify Recommender
 The purpose of this application is to provide content based music
