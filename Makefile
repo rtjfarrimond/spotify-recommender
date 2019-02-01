@@ -1,5 +1,7 @@
 
 
+ci: init test-all check-style
+
 build-all: build-crawler
 
 build-crawler: delete-cache
