@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2:4:1
+    steps:
+      - checkout
+      run: touch config/.env.crawler
+      run: make build-all
+      run: make test-all
+      run: make check-style
