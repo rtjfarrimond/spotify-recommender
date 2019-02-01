@@ -1,6 +1,6 @@
 
 
-ci: init test-all check-style
+ci: init build-all test-all check-style
 
 build-all: build-crawler
 
