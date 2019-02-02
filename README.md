@@ -28,11 +28,13 @@ The application consists of the following components:
 * Uses the [Spotify web API](https://developer.spotify.com/documentation/web-api/quick-start/).
 
 ### To do
-* Check the legality of this...
+* Fix spotipy token authorisation.
+* Write to s3 bucket.
 
 
 ## Infrastructure:
 * An S3 bucket to temporarily store audio from which to extract features.
+* An AWS managed database instance in which to store extracted features.
 
 
 ## Feature extractor:
@@ -43,6 +45,8 @@ The application consists of the following components:
 * Deletes the audio when done.
   * Investigate whether this can be done by streaming, rather than dl.
 
+### To do:
+* Switch to use python alpine base image
 
 ## Database:
 * For storage and retrieval of unprocessed features extracted from audio files.
