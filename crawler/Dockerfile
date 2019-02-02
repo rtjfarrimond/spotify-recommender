@@ -3,6 +3,8 @@ FROM python:3.7.2-alpine3.8
 # Commented out whilst using volume to mount in dev.
 # COPY app/ /usr/local/src/app
 
+ENV PYTHONDONTWRITEBYTECODE=true
+
 WORKDIR /usr/local/src/app
 
 COPY requirements.txt .

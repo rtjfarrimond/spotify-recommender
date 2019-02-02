@@ -21,3 +21,7 @@ services:
       - -m
       - unittest
       - discover
+  feature-extractor:
+    image: feature-extractor
+    container_name: feature-extractor
+    env_file: ./config/.env.extractor
