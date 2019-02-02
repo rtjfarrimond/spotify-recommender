@@ -24,4 +24,4 @@ services:
   feature-extractor:
     image: feature-extractor
     container_name: feature-extractor
-    env_file: ./config/.env.feature-extractor
+    env_file: ./config/.env.extractor
