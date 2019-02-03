@@ -9,7 +9,7 @@ build-all: build-crawler build-feature-extractor
 build-crawler: delete-cache
 	docker build --force-rm=true -t spotify-crawler ./crawler
 
-build-feature-extractor: init
+build-extractor: init
 	docker build --force-rm=true -t feature-extractor ./feature-extractor
 
 

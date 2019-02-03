@@ -1,3 +1,4 @@
+# Alpine set up
 # FROM python:2.7.15-alpine3.7
 
 # RUN apk update
@@ -12,14 +13,16 @@ RUN apt-get update
 RUN apt-get install -y ffmpeg
 
 # Comment out whilst mounting in compose for development.
-COPY app/ /usr/local/src/app
+# COPY app/ /usr/local/src/app
+COPY lib/kapre /usr/local/lib/kapre
+COPY lib/transfer_learning_music /usr/local/lib/transfer_learning_music
 
 WORKDIR /usr/local/src/app
 COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache -r requirements.txt
 
-WORKDIR /usr/local/src/app/lib/kapre
+WORKDIR /usr/local/lib/kapre
 RUN python setup.py install
 
 WORKDIR /usr/local/src/app
