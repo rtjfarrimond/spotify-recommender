@@ -1,0 +1,6 @@
+numpy==1.14.3
+theano==0.9
+keras==1.2.2
+h5py==2.9.0
+boto3==1.9.78
+flake8==3.6.0

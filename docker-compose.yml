@@ -21,3 +21,9 @@ services:
       - -m
       - unittest
       - discover
+  extractor:
+    image: feature-extractor
+    container_name: feature-extractor
+    env_file: ./config/.env.extractor
+    volumes:
+      - ./extractor/app:/usr/local/src/app

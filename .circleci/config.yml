@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.4.1
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: touch config/.env.crawler config/.env.extractor
+      - run: make build-all
+      - run: make test-all
+      - run: make style-all
