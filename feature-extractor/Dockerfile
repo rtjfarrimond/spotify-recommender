@@ -15,7 +15,6 @@ RUN apt-get install -y ffmpeg
 # Comment out whilst mounting in compose for development.
 # COPY app/ /usr/local/src/app
 COPY lib/kapre /usr/local/lib/kapre
-COPY lib/transfer_learning_music /usr/local/lib/transfer_learning_music
 
 WORKDIR /usr/local/src/app
 COPY requirements.txt .
