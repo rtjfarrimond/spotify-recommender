@@ -1,15 +1,13 @@
-import sys
 from argparse import Namespace
-import librosa
+from core.models_transfer import build_convnet_model
 from keras import backend as K
-from models_transfer import build_convnet_model
 import numpy as np
+import boto3
 import keras
-import kapre
+import librosa
+import logging
 import multiprocessing
 import os
-import boto3
-import logging
 
 
 logging.basicConfig(level=logging.INFO)
@@ -31,13 +29,25 @@ if keras.__version__[0] != '1':
 def load_model(mid_idx):
     """Load one model and return it"""
     assert 0 <= mid_idx <= 4
-    args = Namespace(test=False, data_percent=100, model_name='', tf_type='melgram',
-                     normalize='no', decibel=True, fmin=0.0, fmax=6000,
-                     n_mels=96, trainable_fb=False, trainable_kernel=False,
-                     conv_until=mid_idx)
+    args = Namespace(
+        test=False,
+        data_percent=100,
+        model_name='',
+        tf_type='melgram',
+        normalize='no',
+        decibel=True,
+        fmin=0.0,
+        fmax=6000,
+        n_mels=96,
+        trainable_fb=False,
+        trainable_kernel=False,
+        conv_until=mid_idx)
     model = build_convnet_model(args, last_layer=False)
-    model.load_weights('weights_transfer/weights_layer{}_{}.hdf5'.format(mid_idx, K._backend),
-                       by_name=True)
+    model.load_weights(
+        'core/weights_transfer/weights_layer{}_{}.hdf5'.format(
+            mid_idx, K._backend),
+        by_name=True)
+
     return model
 
 
@@ -50,26 +60,31 @@ def load_audio(audio_path, from_aws):
         # Set up aws client
         bucket = os.environ['SYNCH_MP3_S3_DELIVERY_BUCKET_NAME']
         client = boto3.client(
-        's3',
-        aws_access_key_id=os.environ['SYNCH_MP3_UPLOAD_ACCESS_KEY'],
-        aws_secret_access_key=os.environ['SYNCH_MP3_UPLOAD_SECRET_KEY'])
+            's3',
+            aws_access_key_id=os.environ['SYNCH_MP3_UPLOAD_ACCESS_KEY'],
+            aws_secret_access_key=os.environ['SYNCH_MP3_UPLOAD_SECRET_KEY'])
 
         # Define local audio_path
-        audio_path_local = '{}{}'.format(AUDIO_ROOT, os.path.basename(audio_path))
+        audio_path_local = '{}{}'.format(
+            AUDIO_ROOT,
+            os.path.basename(audio_path))
 
         # Download the file
-        try:
-            client.download_file(bucket, audio_path, audio_path_local)
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
-                logger.warn("The object does not exist.")
-            else:
-                raise
+        client.download_file(bucket, audio_path, audio_path_local)
+        # try:
+        #     client.download_file(bucket, audio_path, audio_path_local)
+        # except botocore.exceptions.ClientError as e:
+        #     if e.response['Error']['Code'] == "404":
+        #         logger.warn("The object does not exist.")
+        #     else:
+        #         raise
 
     if from_aws:
-       src, sr = librosa.load(audio_path_local, offset=offset, sr=SR, duration=LEN_SRC)
+        src, sr = librosa.load(
+            audio_path_local, offset=offset, sr=SR, duration=LEN_SRC)
     else:
-        src, sr = librosa.load(audio_path, offset=offset, sr=SR, duration=LEN_SRC)
+        src, sr = librosa.load(
+            audio_path, offset=offset, sr=SR, duration=LEN_SRC)
     len_src = len(src)
     if len_src < ref_n_src:
         new_src = np.zeros(ref_n_src)
@@ -96,8 +111,10 @@ def _predict_one(args):
     features = [models[i].predict(src)[0] for i in range(5)]
     return np.concatenate(features, axis=0)
 
+
 def gen_temp_file_name(f_path, n):
     return TEMP_DIR+str(n)+'_'+os.path.basename(f_path)
+
 
 def save_intermittent(f_path, features, n):
     if not os.path.exists(TEMP_DIR):
@@ -109,12 +126,14 @@ def save_intermittent(f_path, features, n):
     if n > N_INTERMITTENT:
         os.remove(gen_temp_file_name(f_path, n-N_INTERMITTENT))
 
+
 def empty_safe_concat_array(could_be_empty, to_concat):
     if np.array_equal(could_be_empty, np.array([])):
         return np.array(to_concat, dtype=np.float32)
     else:
         return np.concatenate(
             [could_be_empty, np.array(to_concat, dtype=np.float32)])
+
 
 def predict_cpu(f_path, models, n_jobs):
     """ Predict features with multiprocessing.
@@ -153,7 +172,8 @@ def main(f_path, out_path, n_jobs=1):
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
     np.save(out_path, all_features)
-    logger.info('Done. Saved a numpy array size of (%d, %d)' % all_features.shape)
+    logger.info(
+        'Done. Saved a numpy array size of (%d, %d)' % all_features.shape)
 
     # Clean up temp files
     if os.path.exists(TEMP_DIR):

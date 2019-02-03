@@ -9,4 +9,4 @@ jobs:
       - run: touch config/.env.crawler config/.env.extractor
       - run: make build-all
       - run: make test-all
-      - run: make check-style
+      - run: make style-all
