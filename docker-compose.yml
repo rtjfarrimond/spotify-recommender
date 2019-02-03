@@ -25,3 +25,5 @@ services:
     image: feature-extractor
     container_name: feature-extractor
     env_file: ./config/.env.extractor
+    volumes:
+      - ./feature-extractor/app:/usr/local/src/app
