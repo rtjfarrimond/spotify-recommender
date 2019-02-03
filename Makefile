@@ -4,7 +4,7 @@
 
 ci: init build-all test-all check-style
 
-build-all: build-crawler build-feature-extractor
+build-all: build-crawler build-extractor
 
 build-crawler: delete-cache
 	docker build --force-rm=true -t spotify-crawler ./crawler
