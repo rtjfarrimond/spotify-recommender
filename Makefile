@@ -2,7 +2,7 @@
 # Build instructions
 ###############################################################################
 
-ci: init build-all test-all check-style
+ci: init build-all test-all style-all
 
 build-all: build-crawler build-extractor
 
@@ -10,22 +10,31 @@ build-crawler: delete-cache
 	docker build --force-rm=true -t spotify-crawler ./crawler
 
 build-extractor: init
-	docker build --force-rm=true -t feature-extractor ./feature-extractor
+	docker build --force-rm=true -t feature-extractor ./extractor
 
 
 ###############################################################################
 # Test instructions
 ###############################################################################
 
-test-all: test-crawler test-feature-extractor
+test-all: test-crawler test-extractor
 
 test-crawler: delete-cache
 	docker-compose run --rm test-crawler
 
-test-feature-extractor: init
+test-extractor: init
 
-check-style: init
+###############################################################################
+# Style instructions
+###############################################################################
+
+style-all: style-crawler style-extractor
+
+style-crawler: init
 	docker-compose run --rm --entrypoint 'flake8 --extend-ignore=W391 /usr/local/src/app' crawler
+
+style-extractor: init
+	docker-compose run --rm --entrypoint 'flake8 --exclude=core/* --extend-ignore=W391 /usr/local/src/app' extractor
 
 
 ###############################################################################
@@ -36,7 +45,7 @@ crawl: delete-cache
 	docker-compose run --rm crawler
 
 extract: init
-	docker-compose run --rm feature-extractor
+	docker-compose run --rm extractor
 
 
 ###############################################################################
