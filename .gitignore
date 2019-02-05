@@ -5,4 +5,8 @@ __pycache__
 *.mp3
 audio/
 *.cache*
+*.tfstate
+*.backup
+*.tfvars
+.terraform/
 target/
