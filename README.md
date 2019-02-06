@@ -28,18 +28,16 @@ the [Spotify Web API](https://developer.spotify.com/documentation/web-api/).
 * Subscribes to events that notify when the ANNOY space has been updated.
 
 ## ANNOY service
-This service is the custodian of the ANNOY space.
+This service is the custodian of the ANNOY space. It is responsible for:
+* Initialising the annoy space and storing it in S3.
+* Updating the annoy space following writes to the database.
+  * Possibly implemented by subscribing to a DynamoDB event stream.
+* Publishing events to let subscribers know when the annoy space has been updated.
+  * Possibly implemented by an event triggered via upload to the S3 bucket.
 
 ## Infrastructure:
 * An S3 bucket to temporarily store audio from which to extract features.
 * An AWS managed database instance in which to store extracted features.
-
-### Responsibilities
-* Initialising the annoy space and storing it in S3.
-* Updating the annoy space following writes to the database.
-  * Possibly implemented by subscribing to a SynamoDB event stream.
-* Publishing events to let subscribers know when the annoy space has been updated.
-  * Possibly implemented by an event triggered via upload to the S3 bucket.
 
 # Getting started
 
