@@ -20,6 +20,16 @@ resource "aws_s3_bucket" "recommender-bucket" {
   }
 }
 
+resource "aws_s3_bucket" "api-get-lambda-bucket" {
+  bucket = "spot-rec-api-get-lambda-bucket"
+  acl = "private"
+  region = "${var.region}"
+
+  versioning {
+    enabled = true
+  }
+}
+
 resource "aws_dynamodb_table" "audio-features" {
   name             = "AudioFeatures"
   billing_mode     = "PROVISIONED"
