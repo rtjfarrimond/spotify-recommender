@@ -1,2 +1,5 @@
 def get_handler(event, context):
-    return {"message": "Hello world!"}
+    return {
+        "statusCode": 200,
+        "body": "Heller der wrld."
+    }

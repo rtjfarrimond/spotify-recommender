@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "api-get" {
   function_name = "spot-rec-api-get"
-  s3_bucket = "${aws_s3_bucket.api-get-lambda-bucket.bucket}"
-  s3_key = "v0.1.0/hello-lambda.zip"
+  s3_bucket     = "${aws_s3_bucket.api-get-lambda-bucket.bucket}"
+  s3_key        = "v0.1.0/hello-lambda.zip"
 
   handler = "main.get_handler"
   runtime = "python3.7"
@@ -27,4 +27,13 @@ resource "aws_iam_role" "get_lambda_exec" {
   ]
 }
 EOF
+}
+
+resource "aws_lambda_permission" "apigw" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.api-get.arn}"
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_deployment.spot-rec-api-deployment.execution_arn}/*/*"
 }
