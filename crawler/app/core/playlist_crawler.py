@@ -1,7 +1,7 @@
-import spotipy
-import spotipy.util
 import json
 import logging
+import spotipy
+import spotipy.util
 from core.spotify_track import SpotifyTrack
 
 
@@ -14,18 +14,20 @@ class PlaylistCrawler(object):
     __sp = None
     first_page = None
     tracks = None
+    dl_bucket_name = None
 
-    def __init__(self, username, playlist_url, audio_path='./audio'):
+    def __init__(
+            self, username, playlist_url, dl_bucket_name):
         if not username:
             raise ValueError('Spotify username not set.')
         if not playlist_url:
             raise ValueError('Spotify playlist URL not set.')
+        if not dl_bucket_name:
+            raise ValueError('S3 bucket name not set.')
         self.username = username
         self.playlist_url = playlist_url
-        if audio_path[-1] == '/':
-            self.audio_path = audio_path[:-1]
-        else:
-            self.audio_path = audio_path
+        self.dl_bucket_name = dl_bucket_name
+        logger.info(f"Crawler constructor: {self.dl_bucket_name}")
 
     def auth_spotify(self):
         token = spotipy.util.prompt_for_user_token(self.username)
@@ -56,7 +58,8 @@ class PlaylistCrawler(object):
             for item in page['items']:
                 track = item['track']
                 if track['preview_url']:
-                    self.tracks.append(SpotifyTrack.from_json(track))
+                    self.tracks.append(
+                        SpotifyTrack.from_json(track))
 
         logger.info("Parsing preview URLs from playlist...")
 
@@ -76,14 +79,14 @@ class PlaylistCrawler(object):
             parse_page(current_page, counter)
 
     def download_previews(self):
-        if not self.audio_path:
-            raise ValueError('No path to write audio is defined.')
+        if not self.dl_bucket_name:
+            raise ValueError('No S3 bucket to write audio is defined.')
         if not self.tracks:
             self.parse_json()
 
         logger.info("Downloading track previews...")
         for track in self.tracks:
-            track.download_preview(self.audio_path)
+            track.download_preview(self.dl_bucket_name)
 
     def __repr__(self):
         return json.dumps(self.__dict__)
