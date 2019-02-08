@@ -88,7 +88,7 @@ class TestPlaylistCrawler(unittest.TestCase):
         mock_crawler = MockPlaylistCrawler(d)
         mock_crawler.parse_json()
 
-        expected = [SpotifyTrack.from_json(track)]
+        expected = [SpotifyTrack.from_json(track, dl_bucket_name="")]
         actual = mock_crawler.tracks
 
         self.assertEqual(len(expected), len(actual))
@@ -100,7 +100,7 @@ class TestPlaylistCrawler(unittest.TestCase):
         mock_crawler = MockPlaylistCrawler(d)
         mock_crawler.parse_json()
 
-        expected = [SpotifyTrack.from_json(track)] * 2
+        expected = [SpotifyTrack.from_json(track, dl_bucket_name="")] * 2
         actual = mock_crawler.tracks
 
         self.assertEqual(len(expected), len(actual))

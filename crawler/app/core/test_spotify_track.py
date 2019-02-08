@@ -12,12 +12,14 @@ def make_track(
         spotify_id='dummy',
         name='dummy',
         artists=[],
-        preview_url='dummy'):
+        preview_url='dummy',
+        dl_bucket_name='dummy'):
     return SpotifyTrack.from_json({
         'id': spotify_id,
         'name': name,
         'artists': artists,
-        'preview_url': preview_url
+        'preview_url': preview_url,
+        'dl_bucket_name': dl_bucket_name
         })
 
 
@@ -35,6 +37,7 @@ class TestSpotifyTrack(unittest.TestCase):
         cls.artist_2 = {"name": "artist_2"}
         cls.artists = [cls.artist_1, cls.artist_2]
         cls.preview_url = "dummy_url"
+        cls.dl_bucket_name = ''
 
     def test_default_constructor(self):
         attrs = [('attr_1', 'a'), ('attr_2', 'b')]
