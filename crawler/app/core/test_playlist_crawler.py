@@ -18,7 +18,7 @@ class MockSpotifyTrack(SpotifyTrack):
     def __init__(self):
         self.downloaded = False
 
-    def download_preview(self, path):
+    def download_preview(self):
         self.downloaded = True
 
 
@@ -46,39 +46,32 @@ class TestPlaylistCrawler(unittest.TestCase):
         cls.dl_bucket_name_dummy = "pathDummy"
         cls.crawler = PlaylistCrawler(
             cls.username_dummy,
-            cls.playlist_url_dummy,
-            cls.dl_bucket_name_dummy)
+            cls.playlist_url_dummy)
 
     def test_default_constructor_happy_path(self):
         self.assertEqual(self.username_dummy, self.crawler.username)
         self.assertEqual(self.playlist_url_dummy, self.crawler.playlist_url)
-        self.assertEqual(
-            self.dl_bucket_name_dummy, self.crawler.dl_bucket_name)
 
     def test_default_constructor_happy_path_default_dl_bucket_name(self):
         crawler = PlaylistCrawler(
             self.username_dummy,
-            self.playlist_url_dummy,
-            self.dl_bucket_name_dummy)
+            self.playlist_url_dummy)
         self.assertEqual(self.username_dummy, crawler.username)
         self.assertEqual(self.playlist_url_dummy, crawler.playlist_url)
-        self.assertFalse(not crawler.dl_bucket_name)
 
     def test_default_constructor_value_error_when_username_null(self):
         self.assertRaises(
             ValueError,
             PlaylistCrawler,
             None,
-            self.playlist_url_dummy,
-            self.dl_bucket_name_dummy)
+            self.playlist_url_dummy)
 
     def test_default_constructor_value_error_when_playlist_url_null(self):
         self.assertRaises(
             ValueError,
             PlaylistCrawler,
             self.username_dummy,
-            None,
-            self.dl_bucket_name_dummy)
+            None)
 
     def test_parse_json_single_page(self):
         d, track = get_page()
