@@ -68,7 +68,7 @@ class TestSpotifyTrack(unittest.TestCase):
 
     def test_download_preview_value_error_when_no_preview_url(self):
         track = SpotifyTrack({})
-        self.assertRaises(ValueError, track.download_preview, 'path')
+        self.assertRaises(ValueError, track.download_preview)
 
     def test_get_artists_string_returns_empty_string_if_no_artists(self):
         track = SpotifyTrack({})
