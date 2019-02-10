@@ -24,7 +24,7 @@ test-all: test-crawler test-extractor
 test-crawler: delete-cache
 	docker-compose run --rm test-crawler
 
-test-extractor: init
+test-extractor: delete-cache
 
 ###############################################################################
 # Style instructions
@@ -59,7 +59,7 @@ delete-cache: init
 	rm -f crawler/app/.cache* || exit 0
 
 clean: init
-	aws s3 rm s3://$(AUDIO_BUCKET_NAME) --recursive --exclude "terraform.tfstate" --include "*.mp3"
+	aws s3 rm s3://$(AUDIO_BUCKET_NAME) --recursive --exclude "terraform.tfstate"
 
 init:
 	set -ex

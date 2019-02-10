@@ -14,20 +14,14 @@ class PlaylistCrawler(object):
     __sp = None
     first_page = None
     tracks = None
-    dl_bucket_name = None
 
-    def __init__(
-            self, username, playlist_url, dl_bucket_name):
+    def __init__(self, username, playlist_url):
         if not username:
             raise ValueError('Spotify username not set.')
         if not playlist_url:
             raise ValueError('Spotify playlist URL not set.')
-        if not dl_bucket_name:
-            raise ValueError('S3 bucket name not set.')
         self.username = username
         self.playlist_url = playlist_url
-        self.dl_bucket_name = dl_bucket_name
-        logger.info(f"Crawler constructor: {self.dl_bucket_name}")
 
     def auth_spotify(self):
         token = spotipy.util.prompt_for_user_token(self.username)
@@ -79,14 +73,12 @@ class PlaylistCrawler(object):
             parse_page(current_page, counter)
 
     def download_previews(self):
-        if not self.dl_bucket_name:
-            raise ValueError('No S3 bucket to write audio is defined.')
         if not self.tracks:
             self.parse_json()
 
         logger.info("Downloading track previews...")
         for track in self.tracks:
-            track.download_preview(self.dl_bucket_name)
+            track.download_preview()
 
     def __repr__(self):
         return json.dumps(self.__dict__)
