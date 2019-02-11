@@ -8,10 +8,11 @@ resource "aws_s3_bucket" "recommender-bucket" {
   }
 }
 
-resource "aws_s3_bucket" "api-get-lambda-bucket" {
-  bucket = "spot-rec-api-get-lambda-bucket"
-  acl    = "private"
-  region = "${var.region}"
+resource "aws_s3_bucket" "spot-rec-lambda-bucket" {
+  bucket        = "${var.system_code}-lambda-bucket"
+  acl           = "private"
+  region        = "${var.region}"
+  force_destroy = true
 
   versioning {
     enabled = true

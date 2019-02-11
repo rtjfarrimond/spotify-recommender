@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "api-get" {
-  function_name = "spot-rec-api-get"
-  s3_bucket     = "${aws_s3_bucket.api-get-lambda-bucket.bucket}"
+  function_name = "${var.system_code}-api-get"
+  s3_bucket     = "${aws_s3_bucket.spot-rec-lambda-bucket.bucket}"
   s3_key        = "v0.1.0/hello-lambda.zip"
 
   handler = "main.get_handler"

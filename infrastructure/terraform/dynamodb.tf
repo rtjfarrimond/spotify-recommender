@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "audio-features" {
-  name             = "AudioFeatures"
+  name             = "${var.system_code}-dynamodb"
   billing_mode     = "PROVISIONED"
   read_capacity    = 20
   write_capacity   = 20
