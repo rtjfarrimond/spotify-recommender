@@ -8,6 +8,7 @@
 # RUN apk add musl-dev
 
 FROM python:2.7
+LABEL maintainer="Robert Farrimond <rtjfarrimond@gmail.com>"
 
 RUN apt-get update
 RUN apt-get install -y ffmpeg

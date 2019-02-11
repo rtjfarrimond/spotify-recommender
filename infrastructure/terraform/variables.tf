@@ -10,3 +10,6 @@ variable "amis" {
     "us-west-1" = "ami-063aa838bd7631e0b"
   }
 }
+
+variable "extractor_image" {}
+variable "system_code" {}

@@ -1,4 +1,8 @@
 AUDIO_BUCKET_NAME=spotify-recommender-bucket
+CRAWLER_IMAGE_NAME=spotify-crawler
+EXTRACTOR_IMAGE_NAME=feature-extractor
+EXTRACTOR_ECR_REPO=spot-rec-feature-extractor
+
 
 ###############################################################################
 # Build instructions
@@ -9,11 +13,20 @@ ci: init build-all test-all style-all
 build-all: build-crawler build-extractor
 
 build-crawler: delete-cache
-	docker build --force-rm=true -t spotify-crawler ./crawler
+	docker build --force-rm=true -t $(CRAWLER_IMAGE_NAME) ./crawler
 
 build-extractor: init
-	docker build --force-rm=true -t feature-extractor ./extractor
+	docker build --force-rm=true -t $(EXTRACTOR_IMAGE_NAME) ./extractor
 
+## Not yet used in CI/CD
+tag-extractor: init
+	docker tag $(EXTRACTOR_IMAGE_NAME) ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
+
+push-extractor: ecr-login
+	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
+
+ecr-login: init
+	$(aws ecr get-login --no-include-email)
 
 ###############################################################################
 # Test instructions

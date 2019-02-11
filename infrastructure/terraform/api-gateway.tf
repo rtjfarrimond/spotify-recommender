@@ -54,6 +54,6 @@ resource "aws_api_gateway_deployment" "spot-rec-api-deployment" {
   stage_name  = "test"
 }
 
-output "base_url" {
+output "get_base_url" {
   value = "${aws_api_gateway_deployment.spot-rec-api-deployment.invoke_url}"
 }
