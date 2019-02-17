@@ -13,3 +13,5 @@ variable "amis" {
 
 variable "extractor_image" {}
 variable "system_code" {}
+variable "vpc" {}
+variable "subnet_id" {}
