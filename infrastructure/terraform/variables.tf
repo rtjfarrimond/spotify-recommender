@@ -11,6 +11,10 @@ variable "amis" {
   }
 }
 
+variable "get_version" {
+  default = "v0.1.0"
+}
+
 variable "extractor_image" {}
 variable "system_code" {}
 variable "vpc" {}
