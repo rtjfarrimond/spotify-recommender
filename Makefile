@@ -3,7 +3,7 @@ CRAWLER_IMAGE_NAME=spotify-crawler
 EXTRACTOR_IMAGE_NAME=feature-extractor
 EXTRACTOR_ECR_REPO=spot-rec-feature-extractor
 GET_LAMBDA_BUCKET=spot-rec-lambda-bucket
-GET_VERSION=v0.1.2
+GET_VERSION=v0.1.1
 
 
 ###############################################################################
