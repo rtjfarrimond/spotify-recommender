@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "spotify-recommender-bucket"
+    bucket = "spot-rec-tf-state"
     key    = "terraform.tfstate"
     region = "eu-west-1"
   }

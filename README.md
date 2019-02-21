@@ -5,6 +5,11 @@ This application provides the services needed to perform content based music
 recomendation using features extracted from 30s track previews available via
 the [Spotify Web API](https://developer.spotify.com/documentation/web-api/).
 
+# Dependencies
+[Hashicorp Terraform v0.11.11](https://www.terraform.io/)
+[Serverless v1.37.1](https://serverless.com/)
+[Serverless Python Requirements v4.3.0](https://www.npmjs.com/package/serverless-python-requirements)
+
 # Components
 ## Playlist crawler:
 * Crawls Spotify playlists, gets the 30s preview URL, downloads audio to S3.

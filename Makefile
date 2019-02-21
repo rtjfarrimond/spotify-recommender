@@ -3,7 +3,6 @@ CRAWLER_IMAGE_NAME=spotify-crawler
 EXTRACTOR_IMAGE_NAME=feature-extractor
 EXTRACTOR_ECR_REPO=spot-rec-feature-extractor
 GET_LAMBDA_BUCKET=spot-rec-lambda-bucket
-GET_VERSION=v0.1.1
 
 
 ###############################################################################
@@ -29,16 +28,6 @@ push-extractor: ecr-login
 
 ecr-login: init
 	$(aws ecr get-login --no-include-email)
-
-###############################################################################
-# Deploy instructions
-###############################################################################
-
-get-lambda: init
-	cp get-handler/main.py .
-	zip get-handler.zip main.py
-	aws s3 cp get-handler.zip s3://$(GET_LAMBDA_BUCKET)/$(GET_VERSION)/get-handler.zip
-	rm -f get-handler.zip main.py
 
 ###############################################################################
 # Test instructions

@@ -1,20 +1,9 @@
-resource "aws_s3_bucket" "recommender-bucket" {
-  bucket = "spotify-recommender-bucket"
+resource "aws_s3_bucket" "audio-upload-bucket" {
+  bucket = "${var.system_code}-audio-upload-bucket"
   acl    = "private"
   region = "${var.region}"
 
   versioning {
-    enabled = true
-  }
-}
-
-resource "aws_s3_bucket" "spot-rec-lambda-bucket" {
-  bucket        = "${var.system_code}-lambda-bucket"
-  acl           = "private"
-  region        = "${var.region}"
-  force_destroy = true
-
-  versioning {
-    enabled = true
+    enabled = false
   }
 }
