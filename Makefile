@@ -33,7 +33,9 @@ ecr-login: init
 # Test instructions
 ###############################################################################
 
-test-all: test-crawler test-extractor test-api
+# Currently does not run test-api as does not work in ci.
+# Need to set up proejct with pipenv for Circle CI to work properly.
+test-all: test-crawler test-extractor
 
 test-crawler: delete-cache
 	docker-compose run --rm test-crawler

@@ -3,14 +3,27 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.7.2
+        environment:
+          PIPENV_VENV_IN_PROJECT: true
     steps:
       - checkout
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7.2/site-packages
+      - restore_cache:  # ensure this step occurs *before* installing dependencies
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - setup_remote_docker
       - run: touch config/.env.crawler config/.env.extractor
       - run:
           command: |
             sudo pip install pipenv
             cat api/requirements.txt | xargs pipenv install
+      - save_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.7.2/site-packages"
       - run: make build-all
       - run: make test-all
+      - run: pipenv run python -m unittest discover
       - run: make style-all
