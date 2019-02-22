@@ -34,44 +34,40 @@ class MockPlaylistCrawler(PlaylistCrawler):
 
 class TestPlaylistCrawler(unittest.TestCase):
 
-    username_dummy = None
     playlist_url_dummy = None
-    dl_bucket_name_dummy = None
     crawler = None
 
     @classmethod
     def setUpClass(cls):
-        cls.username_dummy = "userDummy"
         cls.playlist_url_dummy = "urlDummy"
-        cls.dl_bucket_name_dummy = "pathDummy"
+        cls.client_id_dummy = "clientIdDummy"
+        cls.client_secret_dummy = "clientSecretDummy"
         cls.crawler = PlaylistCrawler(
-            cls.username_dummy,
-            cls.playlist_url_dummy)
+            cls.playlist_url_dummy,
+            cls.client_id_dummy,
+            cls.client_secret_dummy)
 
     def test_default_constructor_happy_path(self):
-        self.assertEqual(self.username_dummy, self.crawler.username)
         self.assertEqual(self.playlist_url_dummy, self.crawler.playlist_url)
+        self.assertEqual(self.client_id_dummy, self.crawler.client_id)
+        self.assertEqual(self.client_secret_dummy, self.crawler.client_secret)
 
     def test_default_constructor_happy_path_default_dl_bucket_name(self):
         crawler = PlaylistCrawler(
-            self.username_dummy,
-            self.playlist_url_dummy)
-        self.assertEqual(self.username_dummy, crawler.username)
+            self.playlist_url_dummy,
+            self.client_id_dummy,
+            self.client_secret_dummy)
         self.assertEqual(self.playlist_url_dummy, crawler.playlist_url)
-
-    def test_default_constructor_value_error_when_username_null(self):
-        self.assertRaises(
-            ValueError,
-            PlaylistCrawler,
-            None,
-            self.playlist_url_dummy)
+        self.assertEqual(self.client_id_dummy, crawler.client_id)
+        self.assertEqual(self.client_secret_dummy, crawler.client_secret)
 
     def test_default_constructor_value_error_when_playlist_url_null(self):
         self.assertRaises(
             ValueError,
             PlaylistCrawler,
-            self.username_dummy,
-            None)
+            None,
+            self.client_id_dummy,
+            self.client_secret_dummy)
 
     def test_parse_json_single_page(self):
         d, track = get_page()
