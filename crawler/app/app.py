@@ -17,6 +17,8 @@ def main():
     aws_access_key = os.getenv('AWS_ACCESS_KEY_ID', '')
     aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY', '')
     aws_s3_bucket_name = os.getenv('AWS_S3_BUCKET_NAME', '')
+    client_id = os.getenv("SPOTIPY_CLIENT_ID", "")
+    client_secret = os.getenv("SPOTIPY_CLIENT_SECRET", "")
 
     if aws_access_key == '':
         logger.critical("aws access key id not set, cannot continue.")
@@ -30,8 +32,16 @@ def main():
         logger.critical("aws ws3 bucket name not set, cannot continue.")
         exit(1)
 
+    if client_id == '':
+        logger.critical("spotify client id not set, cannot continue.")
+        exit(1)
+
+    if client_secret == '':
+        logger.critical("spotify client secret not set, cannot continue.")
+        exit(1)
+
     logger.info("Downloading previews...")
-    crawler = PlaylistCrawler(playlist)
+    crawler = PlaylistCrawler(playlist, client_id, client_secret)
     crawler.download_previews()
 
     playlist_id = os.path.basename(playlist)

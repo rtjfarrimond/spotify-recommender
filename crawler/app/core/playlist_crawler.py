@@ -17,21 +17,18 @@ class PlaylistCrawler(object):
     first_page = None
     tracks = None
 
-    def __init__(self, playlist_url):
+    def __init__(self, playlist_url, client_id, client_secret):
         if not playlist_url:
             raise ValueError('Spotify playlist URL not set.')
+
         self.playlist_url = playlist_url
+        self.client_id = client_id
+        self.client_secret = client_secret
 
     def auth_spotify(self):
-        client_id = os.getenv("SPOTIPY_CLIENT_ID", "")
-        client_secret = os.getenv("SPOTIPY_CLIENT_SECRET", "")
-
-        if client_id == "" or client_secret == "":
-            raise ValueError("Client credentials not set.")
-
         credentials = oauth2.SpotifyClientCredentials(
-            client_id=client_id,
-            client_secret=client_secret)
+            client_id=self.client_id,
+            client_secret=self.client_secret)
 
         token = credentials.get_access_token()
         if token:
