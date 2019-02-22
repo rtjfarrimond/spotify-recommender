@@ -34,7 +34,7 @@ ecr-login: init
 ###############################################################################
 
 # Currently does not run test-api as does not work in ci.
-# Need to set up proejct with pipenv for Circle CI to work properly.
+# TODO: set up api proejct with pipenv for Circle CI to work properly.
 test-all: test-crawler test-extractor
 
 test-crawler: delete-cache
@@ -42,8 +42,11 @@ test-crawler: delete-cache
 
 test-extractor: delete-cache
 
-test-api: delete-cache
-	$(MAKE) -C api/ test
+test-api-local: delete-cache
+	$(MAKE) -C api/ test-local
+
+test-api-ci: delete-cache
+	$(MAKE) -C api/ test-ci
 
 ###############################################################################
 # Style instructions

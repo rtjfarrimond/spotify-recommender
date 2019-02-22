@@ -15,5 +15,5 @@ jobs:
             cat api/requirements.txt | xargs pipenv install
       - run: make build-all
       - run: make test-all
-      - run: pipenv run python -m unittest discover
+      - run: make test-api-ci
       - run: make style-all
