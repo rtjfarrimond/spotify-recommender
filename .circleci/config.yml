@@ -7,6 +7,10 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: touch config/.env.crawler config/.env.extractor
+      - run:
+          command: |
+            sudo pip install pipenv
+            cat api/requirements.txt | xargs pipenv install
       - run: make build-all
       - run: make test-all
       - run: make style-all
