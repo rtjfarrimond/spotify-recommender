@@ -1,6 +1,6 @@
 init:
 	set -ex
-	$(shell source venv/bin/activate)
+	$(shell . venv/bin/activate)
 
 freeze: init
 	pip freeze > api/requirements.txt
