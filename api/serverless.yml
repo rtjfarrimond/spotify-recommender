@@ -28,7 +28,8 @@ provider:
   stage: dev
   region: eu-west-1
   environment:
-    TRACKS_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    TRACKS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dynamodb
+    REGION: ${self:provider.region}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -77,8 +78,16 @@ functions:
           path: sounds-like
           method: get
           statusCodes:
+            200:
+              pattern: '*"statusCode":[\w]+200'
+            201:
+              pattern: '*"statusCode":[\w]+201'
+            204:
+              pattern: '*"statusCode":[\w]+204'
             400:
               pattern: '*"statusCode":[\w]+400'
+            404:
+              pattern: '*"statusCode":[\w]+404'
   putSoundsLike:
     handler: sounds_like.put
     memorySize: 128

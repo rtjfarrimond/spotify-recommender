@@ -33,12 +33,15 @@ ecr-login: init
 # Test instructions
 ###############################################################################
 
-test-all: test-crawler test-extractor
+test-all: test-crawler test-extractor test-api
 
 test-crawler: delete-cache
 	docker-compose run --rm test-crawler
 
 test-extractor: delete-cache
+
+test-api: delete-cache
+	$(MAKE) -C api/ test
 
 ###############################################################################
 # Style instructions

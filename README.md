@@ -6,9 +6,9 @@ recomendation using features extracted from 30s track previews available via
 the [Spotify Web API](https://developer.spotify.com/documentation/web-api/).
 
 # Dependencies
-[Hashicorp Terraform v0.11.11](https://www.terraform.io/)
-[Serverless v1.37.1](https://serverless.com/)
-[Serverless Python Requirements v4.3.0](https://www.npmjs.com/package/serverless-python-requirements)
+* [Hashicorp Terraform v0.11.11](https://www.terraform.io/)
+* [Serverless v1.37.1](https://serverless.com/)
+* [Serverless Python Requirements v4.3.0](https://www.npmjs.com/package/serverless-python-requirements)
 
 # Components
 ## Playlist crawler:

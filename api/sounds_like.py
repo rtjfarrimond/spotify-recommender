@@ -1,28 +1,87 @@
+from botocore.exceptions import ClientError
 import boto3
 import json
 import logging
 import os
 
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 TRACK_ID_PARAM = "trackId"
+DYNAMO_PK = "TrackId" # TODO: put this in ssm
 
-table_name = os.getenv("TRACKS_TABLE", "")
+# TODO: Put table_name in SSM with serverless then fetch from there.
+table_name = os.getenv("TRACKS_TABLE", "spot-rec-api-dev-dynamodb")
+region = os.getenv("REGION", "eu-west-1")
 logger.info(f"table_name: {table_name}")
+logger.info(f"region: {region}")
 
-# TODO: Get region from the environment.
-dynamodb = boto3.resource("dynamodb", region_name="eu-west-1")
+dynamodb = boto3.resource("dynamodb", region_name=region)
+table = dynamodb.Table(table_name)
 
-response_400 = {
-    "statusCode": 400,
-    "body": "trackId parameter not passed."
-}
+def response_200(event, track_id, item):
+    body = {
+        "message": f"Fetched item with id {track_id}.",
+        "item": item,
+        "input": event
+    }
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps(body)
+    }
+
+def response_400(event):
+    body = {
+        "message": "trackId parameter not passed.",
+        "input": event
+    }
+
+    return {
+        "statusCode": 400,
+        "body": json.dumps(body)
+    }
+
+def response_404(event, track_id):
+    body = {
+        "message": f"Resource with trackId {track_id} not found.",
+        "input": event
+    }
+
+    return {
+        "statusCode": 404,
+        "body": json.dumps(body)
+    }
+
+def track_id_specified(params):
+    ''' Check if a trackId parameter has been passed.
+
+    Parameters:
+    -----------
+    params:
+        dict, queryStringParameters of triggering event, can be None.
+
+    returns:
+        boolean, whether or not a parameter named `trackId` was passed.
+    '''
+    try:
+        if params is None or params[TRACK_ID_PARAM] is None:
+            logger.info("No trackId passed.")
+            return False
+        else:
+            return True
+    except KeyError:
+        return False
 
 def put(event, context):
+    if not track_id_specified(event["queryStringParameters"]):
+        return response_400(event)
+
+    track_id = event["queryStringParameters"][TRACK_ID_PARAM]
+    logger.info(f"track_id: {track_id}")
     body = {
-        "message": "PUT function executed successfully!",
+        "message": f"PUT function executed with TrackId: {track_id}!",
         "input": event
     }
 
@@ -34,24 +93,21 @@ def put(event, context):
     return response
 
 def get(event, context):
-    if event["queryStringParameters"] == None:
-        return response_400
+    if not track_id_specified(event["queryStringParameters"]):
+        return response_400(event)
+
+    track_id = event["queryStringParameters"][TRACK_ID_PARAM]
+    logger.info(f"track_id: {track_id}")
 
     try:
-        track_id = event["queryStringParameters"][TRACK_ID_PARAM]
-        logger.info(f"track_id: {track_id}")
-        body = {
-            "message": f"GET function executed with trackId: {track_id}!",
-            "input": event
-        }
+        response = table.get_item(Key={DYNAMO_PK: track_id})
+        item = response['Item']
+        logger.info(f"Got item with {DYNAMO_PK}=={track_id}, returning 200.")
+        return response_200(event, track_id, item)
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps(body)
-        }
-
-    except (KeyError, TypeError):
-        return response_400
+    except KeyError:
+        logger.info(f"TrackId=={track_id} not in database, returning 404.")
+        return response_404(event, track_id)
 
 
 if __name__ == '__main__':
