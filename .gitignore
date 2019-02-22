@@ -10,3 +10,4 @@ audio/
 *.tfvars
 .terraform/
 target/
+api/.serverless/**

@@ -2,11 +2,18 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/ruby:2.4.1
+      - image: circleci/python:3.7.2
+        environment:
+          PIPENV_VENV_IN_PROJECT: true
     steps:
       - checkout
       - setup_remote_docker
       - run: touch config/.env.crawler config/.env.extractor
+      - run:
+          command: |
+            sudo pip install pipenv
+            cat api/requirements.txt | xargs pipenv install
       - run: make build-all
       - run: make test-all
+      - run: make test-api-ci
       - run: make style-all

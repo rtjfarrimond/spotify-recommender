@@ -2,6 +2,7 @@ AUDIO_BUCKET_NAME=spotify-recommender-bucket
 CRAWLER_IMAGE_NAME=spotify-crawler
 EXTRACTOR_IMAGE_NAME=feature-extractor
 EXTRACTOR_ECR_REPO=spot-rec-feature-extractor
+GET_LAMBDA_BUCKET=spot-rec-lambda-bucket
 
 
 ###############################################################################
@@ -32,12 +33,20 @@ ecr-login: init
 # Test instructions
 ###############################################################################
 
+# Currently does not run test-api as does not work in ci.
+# TODO: set up api proejct with pipenv for Circle CI to work properly.
 test-all: test-crawler test-extractor
 
 test-crawler: delete-cache
 	docker-compose run --rm test-crawler
 
 test-extractor: delete-cache
+
+test-api-local: delete-cache
+	$(MAKE) -C api/ test-local
+
+test-api-ci: delete-cache
+	$(MAKE) -C api/ test-ci
 
 ###############################################################################
 # Style instructions
