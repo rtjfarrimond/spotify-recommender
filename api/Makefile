@@ -1,9 +1,9 @@
 init:
 	set -ex
-	$(shell . venv/bin/activate)
 
 freeze: init
 	pip freeze > api/requirements.txt
 
 test: init
+	$(shell . venv/bin/activate)
 	python -m unittest discover
