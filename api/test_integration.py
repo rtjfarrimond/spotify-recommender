@@ -1,7 +1,5 @@
+from responses import *
 from sounds_like import get
-from sounds_like import response_200
-from sounds_like import response_400
-from sounds_like import response_404
 from sounds_like import table_name
 from sounds_like import TRACK_ID_PARAM
 import boto3

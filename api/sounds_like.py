@@ -1,4 +1,5 @@
 from botocore.exceptions import ClientError
+from responses import *
 import boto3
 import json
 import logging
@@ -20,39 +21,6 @@ logger.info(f"region: {region}")
 dynamodb = boto3.resource("dynamodb", region_name=region)
 table = dynamodb.Table(table_name)
 
-def response_200(event, track_id, item):
-    body = {
-        "message": f"Fetched item with id {track_id}.",
-        "item": item,
-        "input": event
-    }
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps(body)
-    }
-
-def response_400(event):
-    body = {
-        "message": "trackId parameter not passed.",
-        "input": event
-    }
-
-    return {
-        "statusCode": 400,
-        "body": json.dumps(body)
-    }
-
-def response_404(event, track_id):
-    body = {
-        "message": f"Resource with trackId {track_id} not found.",
-        "input": event
-    }
-
-    return {
-        "statusCode": 404,
-        "body": json.dumps(body)
-    }
 
 def track_id_specified(params):
     ''' Check if a trackId parameter has been passed.
