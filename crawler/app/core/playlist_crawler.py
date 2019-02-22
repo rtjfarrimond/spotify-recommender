@@ -1,6 +1,8 @@
 import json
 import logging
+import os
 import spotipy
+import spotipy.oauth2 as oauth2
 import spotipy.util
 from core.spotify_track import SpotifyTrack
 
@@ -15,16 +17,23 @@ class PlaylistCrawler(object):
     first_page = None
     tracks = None
 
-    def __init__(self, username, playlist_url):
-        if not username:
-            raise ValueError('Spotify username not set.')
+    def __init__(self, playlist_url):
         if not playlist_url:
             raise ValueError('Spotify playlist URL not set.')
-        self.username = username
         self.playlist_url = playlist_url
 
     def auth_spotify(self):
-        token = spotipy.util.prompt_for_user_token(self.username)
+        client_id = os.getenv("SPOTIPY_CLIENT_ID", "")
+        client_secret = os.getenv("SPOTIPY_CLIENT_SECRET", "")
+
+        if client_id == "" or client_secret == "":
+            raise ValueError("Client credentials not set.")
+
+        credentials = oauth2.SpotifyClientCredentials(
+            client_id=client_id,
+            client_secret=client_secret)
+
+        token = credentials.get_access_token()
         if token:
             self.__sp = spotipy.Spotify(auth=token)
 

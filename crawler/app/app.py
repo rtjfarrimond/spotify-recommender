@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    username = os.getenv('SPOTIFY_USERNAME', None)
     playlist = os.getenv('SPOTIFY_PLAYLIST', None)
 
     # TODO: Make this work without these if possible
@@ -32,7 +31,7 @@ def main():
         exit(1)
 
     logger.info("Downloading previews...")
-    crawler = PlaylistCrawler(username, playlist)
+    crawler = PlaylistCrawler(playlist)
     crawler.download_previews()
 
     playlist_id = os.path.basename(playlist)

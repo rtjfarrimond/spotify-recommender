@@ -1,4 +1,4 @@
-AUDIO_BUCKET_NAME=spotify-recommender-bucket
+AUDIO_BUCKET_NAME=spot-rec-audio-upload-bucket
 CRAWLER_IMAGE_NAME=spotify-crawler
 EXTRACTOR_IMAGE_NAME=feature-extractor
 EXTRACTOR_ECR_REPO=spot-rec-feature-extractor
@@ -78,7 +78,6 @@ extract: init
 
 delete-cache: init
 	find . -name __pycache__ | sudo xargs rm -rf
-	rm -f crawler/app/.cache* || exit 0
 
 clean: init
 	aws s3 rm s3://$(AUDIO_BUCKET_NAME) --recursive --exclude "terraform.tfstate"
