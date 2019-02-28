@@ -1,6 +1,6 @@
 import unittest
-from sounds_like import track_id_specified
-from sounds_like import TRACK_ID_PARAM
+from app import track_id_specified
+from app import TRACK_ID_PARAM
 
 
 class GetHandlerUnitTests(unittest.TestCase):

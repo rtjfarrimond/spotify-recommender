@@ -1,7 +1,7 @@
-from responses import *
-from sounds_like import get
-from sounds_like import table_name
-from sounds_like import TRACK_ID_PARAM
+from core.responses import *
+from app import get
+from app import table_name
+from app import TRACK_ID_PARAM
 import boto3
 import json
 import random
