@@ -67,6 +67,6 @@ class GetHandlerIntegrationTest(unittest.TestCase):
             "queryStringParameters": {TRACK_ID_PARAM: self.track_id}
         }
         expected_item = {DYNAMO_TRACK_ID: self.track_id}
-        expected = response_200(dummy_event, self.track_id, expected_item)
+        expected = response_200_get_success(dummy_event, self.track_id, expected_item)
         actual = get(dummy_event, '')
         self.assertEqual(expected, actual)

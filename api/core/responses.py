@@ -2,9 +2,21 @@
 import json
 
 
-def response_200(event, track_id, item):
+def response_200_get_success(event, track_id, item):
     body = {
         "message": f"Fetched item with id {track_id}.",
+        "item": item,
+        "input": event
+    }
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps(body)
+    }
+
+def response_200_put_exists(event, track_id, item):
+    body = {
+        "message": f"Item with id {track_id} already exists.",
         "item": item,
         "input": event
     }
