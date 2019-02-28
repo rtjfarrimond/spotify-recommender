@@ -1,5 +1,6 @@
 from app import put
 from app import BUCKET_NAME
+from app import DYNAMO_PK
 from core.responses import *
 from core.spotify import SpotifyDelegate
 from core.spotify_track_downloader import SpotifyTrackDownloader
@@ -10,6 +11,9 @@ import unittest
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+TEST_ID = "test_id"
 
 
 def get_known_track_id(with_preview=True):
@@ -96,3 +100,11 @@ class PutHandlerIntegrationTests(unittest.TestCase):
 
         # Clean up
         bucket.delete_objects(Delete={"Objects": [{"Key": expected_zip}]})
+
+    def test_response_200_put_exists_if_track_exists_in_db(self):
+        dummy_event = {"queryStringParameters": {"trackId": TEST_ID}}
+        expected_item = {DYNAMO_PK: TEST_ID}
+        expected = response_200_put_exists(dummy_event, TEST_ID, expected_item)
+        actual = put(dummy_event, None)
+
+        self.assertEqual(expected, actual)

@@ -19,10 +19,6 @@ region = os.getenv("REGION", "eu-west-1")
 logger.info(f"table_name: {table_name}")
 logger.info(f"region: {region}")
 
-# Get an instance of the dynamodb table.
-dynamodb = boto3.resource("dynamodb", region_name=region)
-table = dynamodb.Table(table_name)
-
 
 def track_id_specified(params):
     ''' Check if a trackId parameter has been passed.
@@ -44,8 +40,20 @@ def track_id_specified(params):
     except KeyError:
         return False
 
+def fetch_item_from_db(primary_key):
+    ''' Fetch a single item from the database by primary key.
+    '''
+    try:
+        dynamodb = boto3.resource("dynamodb", region_name=region)
+        table = dynamodb.Table(table_name)
+        response = table.get_item(Key={DYNAMO_PK: primary_key})
+        return response['Item']
+
+    except KeyError:
+        return False
+
 def put(event, context, downloader=None):
-    ''' Function to handle PUT requests.
+    ''' Function to handle HTTP PUT requests.
 
     The `downloader` parameter exists to enable dependency injection
     of a mock object to test this function's behaviour.
@@ -56,6 +64,11 @@ def put(event, context, downloader=None):
 
     track_id = event["queryStringParameters"][TRACK_ID_PARAM]
     logger.info(f"track_id: {track_id}")
+
+    item = fetch_item_from_db(track_id)
+    if item:
+        logger.info(f"Item with id {track_id} already exists, returning 200.")
+        return response_200_put_exists(event, track_id, item)
 
     if not downloader:
         downloader = SpotifyTrackDownloader(BUCKET_NAME, track_id)
@@ -74,18 +87,18 @@ def put(event, context, downloader=None):
         return response_500(event)
 
 def get(event, context):
+    ''' Function to handle HTTP GET requests.
+    '''
     if not track_id_specified(event["queryStringParameters"]):
         return response_400(event)
 
     track_id = event["queryStringParameters"][TRACK_ID_PARAM]
     logger.info(f"track_id: {track_id}")
+    item = fetch_item_from_db(track_id)
 
-    try:
-        response = table.get_item(Key={DYNAMO_PK: track_id})
-        item = response['Item']
-        logger.info(f"Got item with {DYNAMO_PK}=={track_id}, returning 200.")
-        return response_200(event, track_id, item)
-
-    except KeyError:
+    if not item:
         logger.info(f"TrackId=={track_id} not in database, returning 404.")
         return response_404(event, track_id)
+    else:
+        logger.info(f"Got item with {DYNAMO_PK}=={track_id}, returning 200.")
+        return response_200_get_success(event, track_id, item)
