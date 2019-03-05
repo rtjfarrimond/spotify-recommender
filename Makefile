@@ -62,6 +62,14 @@ style-extractor: init
 
 
 ###############################################################################
+# Config instructions
+###############################################################################
+
+config-extractor: init
+	@echo 'S3_BUCKET_NAME=$(shell $(SSM_FETCH) /$(_SYSTEM_CODE)/audio_bucket_name)' > $(CONFIG_FILE_DIR)/$(EXTRACTOR_ENV_NAME)
+	@echo 'DYNAMODB_TABLE=$(shell $(SSM_FETCH) /$(_SYSTEM_CODE)/dynamodb_table)' >> $(CONFIG_FILE_DIR)/$(EXTRACTOR_ENV_NAME)
+
+###############################################################################
 # Run instructions
 ###############################################################################
 

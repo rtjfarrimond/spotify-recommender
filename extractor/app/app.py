@@ -1,13 +1,17 @@
+from __future__ import print_function
 from argparse import Namespace
 from core.models_transfer import build_convnet_model
 from keras import backend as K
+from zipfile import ZipFile
 import numpy as np
 import boto3
+import glob
 import keras
 import librosa
 import logging
 import multiprocessing
 import os
+import settings
 
 
 logging.basicConfig(level=logging.INFO)
@@ -15,8 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 TEMP_DIR = '/project/features/temp/'
-AUDIO_ROOT = '/project/audio/'
-IS_AWS_FILE = False
 N_INTERMITTENT = 100
 SR = 12000  # [Hz]
 LEN_SRC = 29.  # [second]
@@ -51,40 +53,11 @@ def load_model(mid_idx):
     return model
 
 
-def load_audio(audio_path, from_aws):
+def load_audio(audio_path):
     offset = 0
 
     """Load audio file, shape it and return"""
-    if from_aws:
-        offset = 90
-        # Set up aws client
-        bucket = os.environ['SYNCH_MP3_S3_DELIVERY_BUCKET_NAME']
-        client = boto3.client(
-            's3',
-            aws_access_key_id=os.environ['SYNCH_MP3_UPLOAD_ACCESS_KEY'],
-            aws_secret_access_key=os.environ['SYNCH_MP3_UPLOAD_SECRET_KEY'])
-
-        # Define local audio_path
-        audio_path_local = '{}{}'.format(
-            AUDIO_ROOT,
-            os.path.basename(audio_path))
-
-        # Download the file
-        client.download_file(bucket, audio_path, audio_path_local)
-        # try:
-        #     client.download_file(bucket, audio_path, audio_path_local)
-        # except botocore.exceptions.ClientError as e:
-        #     if e.response['Error']['Code'] == "404":
-        #         logger.warn("The object does not exist.")
-        #     else:
-        #         raise
-
-    if from_aws:
-        src, sr = librosa.load(
-            audio_path_local, offset=offset, sr=SR, duration=LEN_SRC)
-    else:
-        src, sr = librosa.load(
-            audio_path, offset=offset, sr=SR, duration=LEN_SRC)
+    src, sr = librosa.load(audio_path, offset=offset, sr=SR, duration=LEN_SRC)
     len_src = len(src)
     if len_src < ref_n_src:
         new_src = np.zeros(ref_n_src)
@@ -92,9 +65,6 @@ def load_audio(audio_path, from_aws):
         return new_src[np.newaxis, np.newaxis, :]
     else:
         return src[np.newaxis, np.newaxis, :ref_n_src]
-
-    if from_aws:
-        os.remove(audio_path_local)
 
 
 def _paths_models_generator(lines, models):
@@ -106,8 +76,7 @@ def _predict_one(args):
     """target function in pool.map()"""
     line, models = args
     audio_path = line.rstrip('\n')
-    logger.info('Loading/extracting {}...'.format(audio_path))
-    src = load_audio(audio_path, IS_AWS_FILE)
+    src = load_audio(audio_path)
     features = [models[i].predict(src)[0] for i in range(5)]
     return np.concatenate(features, axis=0)
 
@@ -162,37 +131,77 @@ def predict_cpu(f_path, models, n_jobs):
     return empty_safe_concat_array(ret, features)
 
 
-def main(f_path, out_path, n_jobs=1):
-    logger.info("Extracting features from audio file at " + f_path + "...")
+def main(paths, out_path, n_jobs=1):
     models = [load_model(mid_idx) for mid_idx in range(5)]
-    all_features = predict_cpu(f_path, models, n_jobs)
+    count = 1
+    for f_path in paths:
+        logger.info("Extracting features from track {} of {}...".format(
+                    count, len(paths)))
+        count += 1
+        all_features = predict_cpu(f_path, models, n_jobs)
 
-    logger.info('Saving all features at {}..'.format(out_path))
-    dir_name = os.path.dirname(out_path)
-    if not os.path.exists(dir_name):
-        os.mkdir(dir_name)
-    np.save(out_path, all_features)
-    logger.info(
-        'Done. Saved a numpy array size of (%d, %d)' % all_features.shape)
+        logger.info('Saving features at {}..'.format(out_path))
+        feat_name = os.path.basename(f_path).replace('mp3', 'npy')
+        feat_path = "{}/{}".format(out_path, feat_name)
+        np.save(feat_path, all_features)
+        logger.info(
+            'Done. Saved a numpy array size of (%d, %d)' % all_features.shape)
 
-    # Clean up temp files
-    if os.path.exists(TEMP_DIR):
-        for f in os.listdir(TEMP_DIR):
-            os.remove(TEMP_DIR+f)
+        # Clean up temp files
+        if os.path.exists(TEMP_DIR):
+            for f in os.listdir(TEMP_DIR):
+                os.remove(TEMP_DIR+f)
+
+
+def download_extract_zip(bucket, zip_name, dir_name='/tmp'):
+    ''' Download a zip from s3 and extract contents to directory.
+
+    Parameters:
+    -----------
+    bucket:
+        string, name of the S3 bucket to fetch from.
+
+    zip_name:
+        string, name of the zip file to fetch.
+
+    dir_name:
+        string, location to download and extract to, `/tmp` by default.
+    '''
+    s3 = boto3.resource('s3')
+    zip_path = '{}/{}'.format(dir_name, zip_name)
+    s3.Bucket(bucket).download_file(zip_name, zip_path)
+    zip_file = ZipFile(zip_path, 'r')
+    zip_file.extractall(dir_name)
+    zip_file.close()
 
 
 if __name__ == '__main__':
-    audio_path = os.getenv("AUDIO_PATH", "")
-    out_path = os.getenv("OUT_PATH", "")
+    DYNAMODB_TABLE = settings.DYNAMODB_TABLE
+    S3_BUCKET_NAME = settings.S3_BUCKET_NAME
+    ZIP_FILE_NAME = settings.ZIP_FILE_NAME
 
-    if not audio_path or audio_path == "":
-        raise ValueError("Path to audio file not set.")
+    if not DYNAMODB_TABLE:
+        logger.critical("DynamoDB table not configured, cannot continue!")
+        exit(1)
 
-    if not out_path or out_path == "":
-        raise ValueError("Path to write features out not set.")
+    if not S3_BUCKET_NAME:
+        logger.critical("S3 bucket name not configured, cannot continue!")
+        exit(1)
 
-    if not os.path.isfile(audio_path):
-        raise ValueError(
-            "File " + audio_path + "does not exist or is not a regular file.")
+    if not ZIP_FILE_NAME:
+        logger.critical("Zip file name not configured, cannot continue!")
+        exit(1)
 
-    main(audio_path, out_path)
+    audio_path = '/tmp'
+    feature_path = '/tmp/features'
+    if not os.path.exists(feature_path):
+        logger.info("Creating dir {}...".format(feature_path))
+        os.mkdir(feature_path)
+    download_extract_zip(S3_BUCKET_NAME, ZIP_FILE_NAME, dir_name=audio_path)
+
+    paths = glob.glob('{}/**/*.mp3'.format(audio_path))
+
+    # Extract audio features
+    # main(paths, feature_path)
+    main(paths[:1], feature_path)
+    print(os.listdir(feature_path))
