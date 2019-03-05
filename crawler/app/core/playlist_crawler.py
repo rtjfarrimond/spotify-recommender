@@ -1,9 +1,9 @@
+from core.spotify_track import SpotifyTrack
 import json
 import logging
 import spotipy
 import spotipy.oauth2 as oauth2
 import spotipy.util
-from core.spotify_track import SpotifyTrack
 
 
 logging.basicConfig(level=logging.INFO)
@@ -85,6 +85,18 @@ class PlaylistCrawler(object):
         for track in self.tracks:
             track.download_preview()
 
+    def write_tracks_to_json(self, json_file_name):
+        with open(json_file_name, 'w') as f:
+            for track in self.tracks:
+                track_dict = {
+                    "track": {
+                        "id": track.spotify_id,
+                        "title": track.name,
+                        "artists": track.get_artists_string(),
+                        "preview_url": track.preview_url
+                    }
+                }
+                f.write(f"{json.dumps(track_dict)},\n")
+
     def __repr__(self):
         return json.dumps(self.__dict__)
-

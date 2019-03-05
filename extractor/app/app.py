@@ -203,5 +203,5 @@ if __name__ == '__main__':
 
     # Extract audio features
     # main(paths, feature_path)
-    main(paths[:1], feature_path)
+    main(paths[:2], feature_path)
     print(os.listdir(feature_path))
