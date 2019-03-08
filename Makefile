@@ -31,7 +31,6 @@ build-extractor: init
 # Deploy instructions
 ###############################################################################
 
-## Not yet used in CI/CD
 tag-extractor: init
 	docker tag $(EXTRACTOR_IMAGE_NAME) $(EXTRACTOR_ECR_IMAGE_NAME)
 
