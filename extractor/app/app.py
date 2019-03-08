@@ -6,11 +6,13 @@ from zipfile import ZipFile
 import numpy as np
 import boto3
 import glob
+import json
 import keras
 import librosa
 import logging
 import multiprocessing
 import os
+import pickle
 import settings
 
 
@@ -131,26 +133,18 @@ def predict_cpu(f_path, models, n_jobs):
     return empty_safe_concat_array(ret, features)
 
 
-def main(paths, out_path, n_jobs=1):
+def extract_features(paths, out_path, n_jobs=1):
     models = [load_model(mid_idx) for mid_idx in range(5)]
     count = 1
+    all_features = []
     for f_path in paths:
         logger.info("Extracting features from track {} of {}...".format(
                     count, len(paths)))
         count += 1
-        all_features = predict_cpu(f_path, models, n_jobs)
+        features = predict_cpu(f_path, models, n_jobs)
+        all_features.append(pickle.dumps(features, protocol=0))
 
-        logger.info('Saving features at {}..'.format(out_path))
-        feat_name = os.path.basename(f_path).replace('mp3', 'npy')
-        feat_path = "{}/{}".format(out_path, feat_name)
-        np.save(feat_path, all_features)
-        logger.info(
-            'Done. Saved a numpy array size of (%d, %d)' % all_features.shape)
-
-        # Clean up temp files
-        if os.path.exists(TEMP_DIR):
-            for f in os.listdir(TEMP_DIR):
-                os.remove(TEMP_DIR+f)
+    return all_features
 
 
 def download_extract_zip(bucket, zip_name, dir_name='/tmp'):
@@ -175,10 +169,47 @@ def download_extract_zip(bucket, zip_name, dir_name='/tmp'):
     zip_file.close()
 
 
+def delete_zip(bucket, zip_name):
+    logger.info("Deleting {} from {}...".format(zip_name, bucket))
+    s3 = boto3.resource('s3')
+    s3.Object(bucket, zip_name).delete()
+
+
+def parse_tracks_json_lines(json_lines):
+    with open(json_lines) as f:
+        lines = f.readlines()
+
+    tracks = [json.loads(line.replace(',\n', '')) for line in lines]
+    # tracks_nested = {track['track']['id']: track for track in tracks}
+
+    # return tracks_nested
+    return tracks
+
+
+def write_to_db(tracks, all_features, table_name, region="eu-west-1"):
+    logger.info("Writing items to DynamoDB Table {}...".format(table_name))
+    for i in range(len(all_features)):
+        track = tracks[i]['track']
+        track_id = track['id']
+
+        item = {
+            "TrackId": track_id,
+            "Source": "spotify",
+            "Title": track['title'],
+            "Artists": track['artists'],
+            "PreviewUrl": track['preview_url'],
+            "Features": all_features[i]
+        }
+        dynamodb = boto3.resource('dynamodb', region_name=region)
+        table = dynamodb.Table(table_name)
+        table.put_item(Item=item)
+
+
 if __name__ == '__main__':
     DYNAMODB_TABLE = settings.DYNAMODB_TABLE
     S3_BUCKET_NAME = settings.S3_BUCKET_NAME
     ZIP_FILE_NAME = settings.ZIP_FILE_NAME
+    AWS_DEFAULT_REGION = settings.AWS_DEFAULT_REGION
 
     if not DYNAMODB_TABLE:
         logger.critical("DynamoDB table not configured, cannot continue!")
@@ -197,11 +228,18 @@ if __name__ == '__main__':
     if not os.path.exists(feature_path):
         logger.info("Creating dir {}...".format(feature_path))
         os.mkdir(feature_path)
+
+    # Download the zip file.
     download_extract_zip(S3_BUCKET_NAME, ZIP_FILE_NAME, dir_name=audio_path)
 
-    paths = glob.glob('{}/**/*.mp3'.format(audio_path))
-
     # Extract audio features
-    # main(paths, feature_path)
-    main(paths[:2], feature_path)
-    print(os.listdir(feature_path))
+    paths = glob.glob('{}/**/*.mp3'.format(audio_path))
+    json_lines = glob.glob('{}/**/*.json'.format(audio_path))[0]
+    tracks = parse_tracks_json_lines(json_lines)
+    features = extract_features(paths, feature_path)
+
+    # Write to DynamoDB
+    write_to_db(tracks, features, DYNAMODB_TABLE, region=AWS_DEFAULT_REGION)
+
+    # Delete the zip from s3.
+    delete_zip(S3_BUCKET_NAME, ZIP_FILE_NAME)
