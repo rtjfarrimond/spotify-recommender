@@ -19,7 +19,7 @@ jobs:
       - run: make style-all
       - run: make tag-extractor
       - run: make save-extractor
-      - persist_to_workspace
+      - persist_to_workspace:
         root: .
         paths:
           - docker-image
