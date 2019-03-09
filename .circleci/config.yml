@@ -32,13 +32,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - attach_workspace:
-        at: workspace
-      - run:
-        name: Install AWS CLI
-        command: |
-          python3 -m venv venv
-          . venv/bin/activate
-          pip install awscli
+          at: workspace
       - run: make push-extractor
 workflows:
   version: 2
