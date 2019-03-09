@@ -18,7 +18,7 @@ EXTRACTOR_ECR_IMAGE_NAME = ${AWS_ACCOUNT_ID}.dkr.ecr.$(AWS_REGION).amazonaws.com
 # Build instructions
 ###############################################################################
 
-ci: init build-all test-all style-all
+ci: init build-all test-all test-api-ci style-all save-extractor
 
 build-all: build-crawler build-extractor
 
@@ -40,7 +40,11 @@ save-extractor: init tag-extractor
 	mkdir docker-image
 	docker save -o docker-image/image.tar $(EXTRACTOR_ECR_IMAGE_NAME)
 
-push-extractor: init ecr-login
+# Used to load image in CircleCI deployment phase.
+load-extractor: init
+	docker load --input workspace/docker-image/image.tar
+
+push-extractor: init ecr-login load-extractor
 	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
 ecr-login: init

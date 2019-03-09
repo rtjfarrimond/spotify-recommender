@@ -13,12 +13,7 @@ jobs:
           command: |
             sudo pip install pipenv
             cat api/requirements.txt | xargs pipenv install
-      - run: make build-all
-      - run: make test-all
-      - run: make test-api-ci
-      - run: make style-all
-      - run: make tag-extractor
-      - run: make save-extractor
+      - run: make ci
       - persist_to_workspace:
           root: .
           paths:
