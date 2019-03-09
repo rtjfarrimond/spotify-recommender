@@ -1,9 +1,18 @@
-AUDIO_BUCKET_NAME=spot-rec-audio-upload-bucket
-CRAWLER_IMAGE_NAME=spotify-crawler
-EXTRACTOR_IMAGE_NAME=feature-extractor
-EXTRACTOR_ECR_REPO=spot-rec-feature-extractor
-GET_LAMBDA_BUCKET=spot-rec-lambda-bucket
+_SYSTEM_CODE = spot-rec
 
+AUDIO_BUCKET_NAME = spot-rec-audio-upload-bucket
+CRAWLER_IMAGE_NAME = spotify-crawler
+EXTRACTOR_IMAGE_NAME = feature-extractor
+GET_LAMBDA_BUCKET = spot-rec-lambda-bucket
+AWS_DEFAULT_REGION = eu-west-1
+AWS_REGION ?= eu-west-1
+CONFIG_FILE_DIR = config
+EXTRACTOR_ENV_NAME = .env.extractor
+
+SSM_FETCH = aws ssm get-parameter --output text --with-decryption --query 'Parameter.Value' --region $(AWS_DEFAULT_REGION) --name
+
+EXTRACTOR_ECR_REPO = $(shell $(SSM_FETCH) /$(_SYSTEM_CODE)/extractor_ecr_repo)
+EXTRACTOR_ECR_IMAGE_NAME = ${AWS_ACCOUNT_ID}.dkr.ecr.$(AWS_REGION).amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
 ###############################################################################
 # Build instructions
@@ -19,11 +28,19 @@ build-crawler: delete-cache
 build-extractor: init
 	docker build --force-rm=true -t $(EXTRACTOR_IMAGE_NAME) ./extractor
 
-## Not yet used in CI/CD
-tag-extractor: init
-	docker tag $(EXTRACTOR_IMAGE_NAME) ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
+###############################################################################
+# Deploy instructions
+###############################################################################
 
-push-extractor: ecr-login
+tag-extractor: init
+	docker tag $(EXTRACTOR_IMAGE_NAME) $(EXTRACTOR_ECR_IMAGE_NAME)
+
+# Used to save between CircleCI build and deploy phases.
+save-extractor: init tag-extractor
+	mkdir docker-image
+	docker save -o docker-image/image.tar $(EXTRACTOR_ECR_IMAGE_NAME)
+
+push-extractor: init ecr-login
 	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
 ecr-login: init
@@ -64,6 +81,14 @@ style-extractor: init
 
 
 ###############################################################################
+# Config instructions
+###############################################################################
+
+config-extractor: init
+	@echo 'S3_BUCKET_NAME=$(shell $(SSM_FETCH) /$(_SYSTEM_CODE)/audio_bucket_name)' > $(CONFIG_FILE_DIR)/$(EXTRACTOR_ENV_NAME)
+	@echo 'DYNAMODB_TABLE=$(shell $(SSM_FETCH) /$(_SYSTEM_CODE)/dynamodb_table)' >> $(CONFIG_FILE_DIR)/$(EXTRACTOR_ENV_NAME)
+
+###############################################################################
 # Run instructions
 ###############################################################################
 
@@ -86,4 +111,6 @@ clean: init
 
 init:
 	set -ex
+	sudo pip install --upgrade pip
+	sudo pip install awscli
 

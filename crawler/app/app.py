@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     playlist = os.getenv('SPOTIFY_PLAYLIST', None)
+    playlist_id = os.path.basename(playlist)
 
     # TODO: Make this work without these if possible
     aws_access_key = os.getenv('AWS_ACCESS_KEY_ID', '')
@@ -44,12 +45,16 @@ def main():
     crawler = PlaylistCrawler(playlist, client_id, client_secret)
     crawler.download_previews()
 
-    playlist_id = os.path.basename(playlist)
-    zip_file_name = f"/tmp/{playlist_id }.zip"
-    logger.info(f"Zipping mp3 payload to zip at {zip_file_name}...")
+    logger.info("Generating playlist json...")
+    json_file_name = f'/tmp/{playlist_id}.json'
+    crawler.write_tracks_to_json(json_file_name)
+
+    zip_file_name = f"/tmp/{playlist_id}.zip"
+    logger.info(f"Zipping payload into {zip_file_name}...")
     with ZipFile(zip_file_name, 'w') as zf:
         for f in glob.glob("/tmp/*.mp3"):
             zf.write(f)
+        zf.write(json_file_name)
 
     logger.info(f"Uploading payload to S3 {aws_s3_bucket_name}...")
     s3 = boto3.resource('s3')

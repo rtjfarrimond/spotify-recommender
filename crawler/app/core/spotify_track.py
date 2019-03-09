@@ -1,7 +1,7 @@
-import urllib.request
-import logging
 from core.spotify_artist import SpotifyArtist
-from util.string_utils import escape_forwardslash
+import json
+import logging
+import urllib.request
 
 
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +34,7 @@ class SpotifyTrack(object):
             raise ValueError('Track does not define a preview_url.')
 
         logger.info(f'Downloading preview for: {self}')
-        filename = f"{escape_forwardslash(str(self))}.mp3"
+        filename = f"{self.spotify_id}.mp3"
         audio_path = f'/tmp/{filename}'
         urllib.request.urlretrieve(
             self.preview_url,
