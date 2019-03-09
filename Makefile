@@ -45,10 +45,8 @@ load-extractor: init
 	docker load --input workspace/docker-image/image.tar
 
 push-extractor: init ecr-login load-extractor
-	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
-
-ecr-login: init
 	$(aws ecr get-login --no-include-email)
+	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
 ###############################################################################
 # Test instructions
