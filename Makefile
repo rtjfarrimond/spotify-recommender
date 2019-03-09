@@ -42,10 +42,10 @@ save-extractor: init tag-extractor
 
 # Used to load image in CircleCI deployment phase.
 load-extractor: init
-	docker load --input workspace/docker-image/image.tar
+	docker load --input workspace/docker-image/image.tar || exit 0
 
 push-extractor: init load-extractor
-	$(aws ecr get-login --no-include-email)
+	$(shell aws ecr get-login --no-include-email)
 	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
 ###############################################################################
