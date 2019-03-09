@@ -109,6 +109,6 @@ clean: init
 
 init:
 	set -ex
-	pip install --upgrade pip
-	pip install awscli
+	sudo pip install --upgrade pip
+	sudo pip install awscli
 
