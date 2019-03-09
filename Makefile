@@ -5,13 +5,14 @@ CRAWLER_IMAGE_NAME = spotify-crawler
 EXTRACTOR_IMAGE_NAME = feature-extractor
 GET_LAMBDA_BUCKET = spot-rec-lambda-bucket
 AWS_DEFAULT_REGION = eu-west-1
+AWS_REGION ?= eu-west-1
 CONFIG_FILE_DIR = config
 EXTRACTOR_ENV_NAME = .env.extractor
 
 SSM_FETCH = aws ssm get-parameter --output text --with-decryption --query 'Parameter.Value' --region $(AWS_DEFAULT_REGION) --name
 
 EXTRACTOR_ECR_REPO = $(shell $(SSM_FETCH) /$(_SYSTEM_CODE)/extractor_ecr_repo)
-EXTRACTOR_ECR_IMAGE_NAME = ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
+EXTRACTOR_ECR_IMAGE_NAME = ${AWS_ACCOUNT_ID}.dkr.ecr.$(AWS_REGION).amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
 ###############################################################################
 # Build instructions
