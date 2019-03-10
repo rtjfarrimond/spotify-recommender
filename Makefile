@@ -46,7 +46,7 @@ load-extractor: init
 
 push-extractor: init load-extractor
 	$(shell aws ecr get-login --no-include-email)
-	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$(EXTRACTOR_ECR_REPO)
+	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.$(AWS_REGION).amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
 ###############################################################################
 # Test instructions
@@ -98,7 +98,7 @@ crawl: delete-cache
 	docker-compose run --rm crawler
 
 extract: init
-	docker-compose run --rm extractor
+	docker run --rm --env-file ./config/.env.extractor --name $(_SYSTEM_CODE)-$(EXTRACTOR_IMAGE_NAME) $(EXTRACTOR_IMAGE_NAME)
 
 
 ###############################################################################
