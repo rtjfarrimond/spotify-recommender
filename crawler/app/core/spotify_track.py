@@ -1,5 +1,4 @@
 from core.spotify_artist import SpotifyArtist
-import json
 import logging
 import urllib.request
 

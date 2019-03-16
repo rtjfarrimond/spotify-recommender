@@ -5,4 +5,3 @@ resource "aws_ecr_repository" "spot-rec-ecr" {
 output "ecr_repo_uri" {
   value = "${aws_ecr_repository.spot-rec-ecr.repository_url}"
 }
-

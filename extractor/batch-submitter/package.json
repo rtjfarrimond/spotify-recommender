@@ -1,0 +1,14 @@
+{
+  "name": "spot-rec-batch-submitter",
+  "version": "1.0.0",
+  "description": "Lambda function to submit batch jobs for feature extraction.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Robert Farrimond <rtjfarrimond@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "serverless-python-requirements": "^4.3.0"
+  }
+}

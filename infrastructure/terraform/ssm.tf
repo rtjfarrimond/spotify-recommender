@@ -9,3 +9,15 @@ resource "aws_ssm_parameter" "extractor_ecr_repo" {
   type  = "String"
   value = "${aws_ecr_repository.spot-rec-ecr.name}"
 }
+
+resource "aws_ssm_parameter" "extractor_job_queue" {
+  name  = "/${var.system_code}/extractor_job_queue"
+  type  = "String"
+  value = "${aws_batch_job_queue.extractor_queue.name}"
+}
+
+resource "aws_ssm_parameter" "extractor_job_definition" {
+  name  = "/${var.system_code}/extractor_job_definition"
+  type  = "String"
+  value = "${aws_batch_job_definition.feature_extractor.name}"
+}
