@@ -7,3 +7,13 @@ resource "aws_s3_bucket" "audio-upload-bucket" {
     enabled = false
   }
 }
+
+resource "aws_s3_bucket_notification" "zip_upload_notification" {
+  bucket = "${aws_s3_bucket.audio-upload-bucket.id}"
+
+  lambda_function {
+    lambda_function_arn = "${var.batch_submit_lambda_arn}"
+    events              = ["s3:ObjectCreated:*"]
+    filter_suffix       = ".zip"
+  }
+}

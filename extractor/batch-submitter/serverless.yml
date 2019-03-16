@@ -32,8 +32,9 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
+        - ssm:GetParameter
         - batch:SubmitJob
-      Resource: "arn:aws:batch:*:*:*"
+      Resource: "*"
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:

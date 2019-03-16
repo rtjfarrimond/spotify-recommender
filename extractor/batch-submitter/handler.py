@@ -3,12 +3,14 @@ import json
 import logging
 
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+SYSTEM_CODE = "spot-rec"
 
-def get_parameter(name):
+
+def get_parameter(param_name):
+    name = f"/{SYSTEM_CODE}/{param_name}"
     if not name or name == "":
         raise ValueError("name not passed.")
 
@@ -17,12 +19,11 @@ def get_parameter(name):
     return response ['Parameter']['Value']
 
 
-SYSTEM_CODE = "spot-rec"
-JOB_NAME_PREFIX = get_parameter(f'/{SYSTEM_CODE}/job_name_prefix')
+JOB_NAME_PREFIX = get_parameter('job_name_prefix')
+JOB_QUEUE = get_parameter("extractor_job_queue")
+JOB_DEFINITION = get_parameter("extractor_job_definition")
 
-# TODO: Move these to SSM.
-JOB_QUEUE = "spot-rec-feature-extractor-job-queue"
-JOB_DEFINITION = "audio-feature-extraction-job-definition:2"
+# TODO: Move to SSM.
 DYNAMODB_TABLE = "spot-rec-api-dev-dynamodb"
 
 
