@@ -83,6 +83,7 @@ class PutHandlerIntegrationTests(unittest.TestCase):
 
     def test_track_uploaded_to_s3(self):
         track_id = get_known_track_id()
+        logger.info(track_id)
         if not track_id:
             self.fail("Could not get a track id with a preview url.")
         expected_zip = f"{track_id}.zip"

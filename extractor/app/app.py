@@ -223,6 +223,10 @@ if __name__ == '__main__':
         logger.critical("Zip file name not configured, cannot continue!")
         exit(1)
 
+    logger.info(f"DynamoDB table: {DYNAMODB_TABLE}")
+    logger.info(f"S3 bucket name: {S3_BUCKET_NAME}")
+    logger.info(f"Zip file name: {ZIP_FILE_NAME}")
+
     audio_path = '/tmp'
     feature_path = '/tmp/features'
     if not os.path.exists(feature_path):
