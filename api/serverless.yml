@@ -142,23 +142,3 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-resources:
-  Resources:
-    SpotRecApiDynamoDB:
-      Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
-      Properties:
-        AttributeDefinitions:
-          -
-            AttributeName: "TrackId"
-            AttributeType: "S"
-        KeySchema:
-          -
-            AttributeName: "TrackId"
-            KeyType: "HASH"
-        ProvisionedThroughput:
-          ReadCapacityUnits: 20
-          WriteCapacityUnits: 20
-        StreamSpecification:
-          StreamViewType: "NEW_AND_OLD_IMAGES"
-        TableName: ${self:provider.environment.TRACKS_TABLE}

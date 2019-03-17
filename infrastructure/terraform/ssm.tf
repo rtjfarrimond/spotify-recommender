@@ -21,3 +21,21 @@ resource "aws_ssm_parameter" "extractor_job_definition" {
   type  = "String"
   value = "${aws_batch_job_definition.feature_extractor.name}"
 }
+
+resource "aws_ssm_parameter" "dynamodb_table" {
+  name  = "/${var.system_code}/dynamodb"
+  type  = "String"
+  value = "${aws_dynamodb_table.metadata_table.name}"
+}
+
+resource "aws_ssm_parameter" "dynamodb_table_hash_key" {
+  name  = "/${var.system_code}/dynamodb_hash_key_name"
+  type  = "String"
+  value = "${var.dynamodb_hash_key_name}"
+}
+
+resource "aws_ssm_parameter" "dynamodb_table_sort_key" {
+  name  = "/${var.system_code}/dynamodb_sort_key_name"
+  type  = "String"
+  value = "${var.dynamodb_sort_key_name}"
+}
