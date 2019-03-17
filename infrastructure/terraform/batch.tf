@@ -11,7 +11,7 @@ resource "aws_batch_job_definition" "feature_extractor" {
   "command": ["python", "app.py"],
   "jobRoleArn": "${aws_iam_role.extractor_role.arn}",
   "image": "${var.aws_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.spot-rec-ecr.name}",
-  "memory": 8192,
+  "memory": 512,
   "vcpus": 2,
   "volumes": [],
   "environment": [
