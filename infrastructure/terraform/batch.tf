@@ -17,7 +17,7 @@ resource "aws_batch_job_definition" "feature_extractor" {
   "environment": [
     {
       "name": "DYNAMODB_TABLE",
-      "value": "${var.dynamodb_table}"
+      "value": "${aws_dynamodb_table.metadata_table.name}"
     },
     {
       "name": "ZIP_FILE_NAME",
@@ -44,8 +44,9 @@ resource "aws_batch_compute_environment" "extractor_environment" {
       "optimal",
     ]
 
-    max_vcpus = 16
-    min_vcpus = 0
+    max_vcpus     = 16
+    desired_vcpus = 4
+    min_vcpus     = 0
 
     security_group_ids = [
       "${var.security_group}",

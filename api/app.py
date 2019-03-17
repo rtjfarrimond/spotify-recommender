@@ -1,6 +1,7 @@
 from core.spotify_track_downloader import SpotifyTrackDownloader
 from core.responses import *
 import boto3
+import core.settings as settings
 import json
 import logging
 import os
@@ -10,14 +11,14 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 TRACK_ID_PARAM = "trackId"
-DYNAMO_PK = "TrackId" # TODO: put this in ssm
-BUCKET_NAME = "spot-rec-audio-upload-bucket" # TODO: put this in ssm
+DYNAMO_HASH = settings.DYNAMODB_TABLE_HASH_KEY
+DYNAMO_SORT = settings.DYNAMODB_TABLE_SORT_KEY
+BUCKET_NAME = settings.AUDIO_UPLOAD_BUCKET
 
-# TODO: Put table_name in SSM with serverless then fetch from there.
-table_name = os.getenv("TRACKS_TABLE", "spot-rec-api-dev-dynamodb")
+TABLE_NAME = settings.DYNAMODB_TABLE
 region = os.getenv("REGION", "eu-west-1")
-logger.info(f"table_name: {table_name}")
-logger.info(f"region: {region}")
+logger.info(f"Table_name: {TABLE_NAME}")
+logger.info(f"Region: {region}")
 
 
 def track_id_specified(params):
@@ -40,13 +41,18 @@ def track_id_specified(params):
     except KeyError:
         return False
 
-def fetch_item_from_db(primary_key):
-    ''' Fetch a single item from the database by primary key.
+def fetch_item_from_db(hash_key, sort_key='spotify'):
+    ''' Fetch a single item from the database by hash key.
     '''
     try:
         dynamodb = boto3.resource("dynamodb", region_name=region)
-        table = dynamodb.Table(table_name)
-        response = table.get_item(Key={DYNAMO_PK: primary_key})
+        table = dynamodb.Table(TABLE_NAME)
+        response = table.get_item(
+            Key={
+                DYNAMO_HASH: hash_key,
+                DYNAMO_SORT: sort_key
+            }
+        )
         return response['Item']
 
     except KeyError:
@@ -100,5 +106,5 @@ def get(event, context):
         logger.info(f"TrackId=={track_id} not in database, returning 404.")
         return response_404(event, track_id)
     else:
-        logger.info(f"Got item with {DYNAMO_PK}=={track_id}, returning 200.")
+        logger.info(f"Got item with {DYNAMO_HASH}=={track_id}, returning 200.")
         return response_200_get_success(event, track_id, item)

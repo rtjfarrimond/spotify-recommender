@@ -1,25 +1,31 @@
 from app import put
 from app import BUCKET_NAME
-from app import DYNAMO_PK
+from app import DYNAMO_HASH
+from app import DYNAMO_SORT
+from app import TABLE_NAME
 from core.responses import *
+from core.settings import DYNAMODB_TABLE_HASH_KEY
+from core.settings import DYNAMODB_TABLE_SORT_KEY
 from core.spotify import SpotifyDelegate
 from core.spotify_track_downloader import SpotifyTrackDownloader
 import boto3
 import logging
 import unittest
+import warnings
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+# TODO: Source hardcoded to spotify until we support multiple sources properly.
 TEST_ID = "test_id"
+TEST_SOURCE = "spotify"
 
 
 def get_known_track_id(with_preview=True):
     ''' Uses Spotify web api search endpoint to get existing track id.
     '''
-    # TODO: Ensure that preview url is available before returning.
     sp = SpotifyDelegate()
     response = sp.search('love', 'track')
     for track in response['tracks']['items']:
@@ -73,6 +79,29 @@ class PutHandlerUnitTests(unittest.TestCase):
 
 class PutHandlerIntegrationTests(unittest.TestCase):
 
+    def setUp(self):
+        # Ignoring ssl unclosed warning after looking on boto3 gh issues.
+        warnings.filterwarnings(
+            "ignore",
+            category=ResourceWarning,
+            message="unclosed.*<ssl.SSLSocket.*>")
+        self.dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
+        self.table = self.dynamodb.Table(TABLE_NAME)
+        self.table.put_item(
+            Item={
+                DYNAMODB_TABLE_HASH_KEY: TEST_ID,
+                DYNAMODB_TABLE_SORT_KEY: TEST_SOURCE
+            }
+        )
+
+    def tearDown(self):
+        self.table.delete_item(
+            Key={
+                DYNAMODB_TABLE_HASH_KEY: TEST_ID,
+                DYNAMODB_TABLE_SORT_KEY: TEST_SOURCE
+            }
+        )
+
     def test_response_204_when_no_preview_available_for_track(self):
         track_id = get_known_track_id(False)
         if not track_id:
@@ -104,7 +133,10 @@ class PutHandlerIntegrationTests(unittest.TestCase):
 
     def test_response_200_put_exists_if_track_exists_in_db(self):
         dummy_event = {"queryStringParameters": {"trackId": TEST_ID}}
-        expected_item = {DYNAMO_PK: TEST_ID}
+        expected_item = {
+            DYNAMO_HASH: TEST_ID,
+            DYNAMO_SORT: TEST_SOURCE
+        }
         expected = response_200_put_exists(dummy_event, TEST_ID, expected_item)
         actual = put(dummy_event, None)
 

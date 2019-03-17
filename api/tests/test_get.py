@@ -1,6 +1,8 @@
 from core.responses import *
+from core.settings import DYNAMODB_TABLE_HASH_KEY
+from core.settings import DYNAMODB_TABLE_SORT_KEY
 from app import get
-from app import table_name
+from app import TABLE_NAME
 from app import TRACK_ID_PARAM
 import boto3
 import json
@@ -10,7 +12,8 @@ import unittest
 import warnings
 
 
-DYNAMO_TRACK_ID = "TrackId"
+# TODO: Hard coded to spotify until we properly support multiple sources.
+source = "spotify"
 
 
 def get_random_id():
@@ -34,12 +37,22 @@ class GetHandlerIntegrationTest(unittest.TestCase):
             category=ResourceWarning,
             message="unclosed.*<ssl.SSLSocket.*>")
         self.dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
-        self.table = self.dynamodb.Table(table_name)
+        self.table = self.dynamodb.Table(TABLE_NAME)
         self.track_id = get_random_id()
-        self.table.put_item(Item={DYNAMO_TRACK_ID: self.track_id})
+        self.table.put_item(
+            Item={
+                DYNAMODB_TABLE_HASH_KEY: self.track_id,
+                DYNAMODB_TABLE_SORT_KEY: source
+            }
+        )
 
     def tearDown(self):
-        self.table.delete_item(Key={DYNAMO_TRACK_ID: self.track_id})
+        self.table.delete_item(
+            Key={
+                DYNAMODB_TABLE_HASH_KEY: self.track_id,
+                DYNAMODB_TABLE_SORT_KEY: source
+            }
+        )
 
     def test_get_returns_code_400_when_no_params(self):
         dummy_event = {"queryStringParameters": None}
@@ -66,7 +79,10 @@ class GetHandlerIntegrationTest(unittest.TestCase):
         dummy_event = {
             "queryStringParameters": {TRACK_ID_PARAM: self.track_id}
         }
-        expected_item = {DYNAMO_TRACK_ID: self.track_id}
+        expected_item = {
+            DYNAMODB_TABLE_HASH_KEY: self.track_id,
+            DYNAMODB_TABLE_SORT_KEY: source
+        }
         expected = response_200_get_success(dummy_event, self.track_id, expected_item)
         actual = get(dummy_event, '')
         self.assertEqual(expected, actual)

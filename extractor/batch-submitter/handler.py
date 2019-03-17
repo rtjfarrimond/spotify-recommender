@@ -22,9 +22,7 @@ def get_parameter(param_name):
 JOB_NAME_PREFIX = get_parameter('job_name_prefix')
 JOB_QUEUE = get_parameter("extractor_job_queue")
 JOB_DEFINITION = get_parameter("extractor_job_definition")
-
-# TODO: Move to SSM.
-DYNAMODB_TABLE = "spot-rec-api-dev-dynamodb"
+DYNAMODB_TABLE = get_parameter("dynamodb")
 
 
 def submit_job(event, context):

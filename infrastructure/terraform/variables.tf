@@ -14,9 +14,12 @@ variable "aws_account_id" {
   default = "479503948477"
 }
 
-# This needs to be provisioned in TF rather than serverless, var is temp hack.
-variable "dynamodb_table" {
-  default = "spot-rec-api-dev-dynamodb"
+variable "dynamodb_hash_key_name" {
+  default = "TrackId"
+}
+
+variable "dynamodb_sort_key_name" {
+  default = "Source"
 }
 
 variable "vpc" {}
