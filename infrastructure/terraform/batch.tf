@@ -2,10 +2,6 @@ resource "aws_batch_job_definition" "feature_extractor" {
   name = "${var.system_code}-extractor-job-definition"
   type = "container"
 
-  timeout {
-    attempt_duration_seconds = 3600
-  }
-
   container_properties = <<CONTAINER_PROPERTIES
 {
   "command": ["python", "app.py"],
