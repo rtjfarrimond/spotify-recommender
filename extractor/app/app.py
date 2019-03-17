@@ -11,7 +11,6 @@ import json
 import keras
 import librosa
 import logging
-import multiprocessing
 import os
 import pickle
 import settings
