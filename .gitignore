@@ -11,3 +11,4 @@ audio/
 .terraform/
 target/
 api/.serverless/**
+*.pkl

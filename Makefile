@@ -63,7 +63,7 @@ test-crawler: delete-cache
 
 test-extractor: delete-cache
 
-test-api-local: delete-cache
+test-api-local: clean
 	$(MAKE) -C api/ test-local
 
 test-api-ci: delete-cache
@@ -80,7 +80,6 @@ style-crawler: init
 
 style-extractor: init
 	docker-compose run --rm --entrypoint 'flake8 --exclude=core/* --extend-ignore=W391 /usr/local/src/app' extractor
-
 
 ###############################################################################
 # Config instructions
@@ -108,8 +107,7 @@ extract: init
 delete-cache: init
 	find . -name __pycache__ | sudo xargs rm -rf
 
-clean: init
-	aws s3 rm s3://$(AUDIO_BUCKET_NAME) --recursive --exclude "terraform.tfstate"
+clean: init delete-cache
 
 init:
 	set -ex
