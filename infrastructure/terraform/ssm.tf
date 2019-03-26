@@ -39,3 +39,9 @@ resource "aws_ssm_parameter" "dynamodb_table_sort_key" {
   type  = "String"
   value = "${var.dynamodb_sort_key_name}"
 }
+
+resource "aws_ssm_parameter" "feature_vector_length" {
+  name  = "/${var.system_code}/feature_vector_length"
+  type  = "String"
+  value = "${var.feature_vector_length}"
+}

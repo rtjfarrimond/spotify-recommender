@@ -22,6 +22,10 @@ variable "dynamodb_sort_key_name" {
   default = "Source"
 }
 
+variable "feature_vector_length" {
+  default = "160"
+}
+
 variable "vpc" {}
 variable "cidr_block" {}
 variable "subnet_id" {}

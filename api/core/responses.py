@@ -1,18 +1,22 @@
-# TODO: Move this into the core package.
 import json
 
 
-def response_200_get_success(event, track_id, item):
+def to_json_string(status_code, body):
+    return json.dumps({
+        "statusCode": status_code,
+        "body": body
+    })
+
+
+def response_200_get_success(event, track_id, results):
     body = {
-        "message": f"Fetched item with id {track_id}.",
-        "item": item,
-        "input": event
+        "message": f"Fetched sounds like results for query track: {track_id}.",
+        "input": event,
+        "results": results
     }
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(body)
-    }
+    return to_json_string(200, body)
+
 
 def response_200_put_exists(event, track_id, item):
     body = {
@@ -21,10 +25,7 @@ def response_200_put_exists(event, track_id, item):
         "input": event
     }
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(body)
-    }
+    return to_json_string(200, body)
 
 def response_202(event, track_id):
     body = {
@@ -32,10 +33,8 @@ def response_202(event, track_id):
         "input": event
     }
 
-    return {
-        "statusCode": 202,
-        "body": json.dumps(body)
-    }
+    return to_json_string(202, body)
+
 
 def response_204(event, track_id):
     body = {
@@ -43,10 +42,8 @@ def response_204(event, track_id):
         "input": event
     }
 
-    return {
-        "statusCode": 204,
-        "body": json.dumps(body)
-    }
+    return to_json_string(204, body)
+
 
 def response_400(event):
     body = {
@@ -54,10 +51,8 @@ def response_400(event):
         "input": event
     }
 
-    return {
-        "statusCode": 400,
-        "body": json.dumps(body)
-    }
+    return to_json_string(400, body)
+
 
 def response_404(event, track_id):
     body = {
@@ -65,10 +60,8 @@ def response_404(event, track_id):
         "input": event
     }
 
-    return {
-        "statusCode": 404,
-        "body": json.dumps(body)
-    }
+    return to_json_string(404, body)
+
 
 def response_500(event):
     body = {
@@ -76,7 +69,4 @@ def response_500(event):
         "input": event
     }
 
-    return {
-        "statusCode": 500,
-        "body": json.dumps(body)
-    }
+    return to_json_string(500, body)
