@@ -1,5 +1,6 @@
 from __future__ import print_function
 from argparse import Namespace
+from boto3.dynamodb.types import Binary
 from core.models_transfer import build_convnet_model
 from functools import partial
 from keras import backend as K
@@ -122,7 +123,7 @@ def extract_features(table_name, region, f_path, track):
             "Title": track['title'],
             "Artists": track['artists'],
             "PreviewUrl": track['preview_url'],
-            "Features": features
+            "Features": Binary(features)
         }
         dynamodb = boto3.resource('dynamodb', region_name=region)
         table = dynamodb.Table(table_name)
