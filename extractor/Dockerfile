@@ -13,7 +13,6 @@ LABEL maintainer="Robert Farrimond <rtjfarrimond@gmail.com>"
 RUN apt-get update
 RUN apt-get install -y ffmpeg
 
-# Comment out whilst mounting in compose for development.
 COPY app/ /usr/local/src/app
 COPY lib/kapre /usr/local/lib/kapre
 
