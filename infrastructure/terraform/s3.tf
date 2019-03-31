@@ -8,6 +8,16 @@ resource "aws_s3_bucket" "audio-upload-bucket" {
   }
 }
 
+resource "aws_s3_bucket" "annoy-bucket" {
+  bucket = "${var.system_code}-annoy-bucket"
+  acl    = "private"
+  region = "${var.region}"
+
+  versioning {
+    enabled = true
+  }
+}
+
 resource "aws_s3_bucket_notification" "zip_upload_notification" {
   bucket = "${aws_s3_bucket.audio-upload-bucket.id}"
 

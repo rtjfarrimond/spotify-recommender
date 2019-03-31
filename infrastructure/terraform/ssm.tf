@@ -4,6 +4,12 @@ resource "aws_ssm_parameter" "audio_bucket_name" {
   value = "${aws_s3_bucket.audio-upload-bucket.bucket}"
 }
 
+resource "aws_ssm_parameter" "annoy_bucket_name" {
+  name  = "/${var.system_code}/annoy_bucket_name"
+  type  = "String"
+  value = "${aws_s3_bucket.annoy-bucket.bucket}"
+}
+
 resource "aws_ssm_parameter" "extractor_ecr_repo" {
   name  = "/${var.system_code}/extractor_ecr_repo"
   type  = "String"
@@ -44,4 +50,10 @@ resource "aws_ssm_parameter" "feature_vector_length" {
   name  = "/${var.system_code}/feature_vector_length"
   type  = "String"
   value = "${var.feature_vector_length}"
+}
+
+resource "aws_ssm_parameter" "annoy_file_name" {
+  name  = "/${var.system_code}/annoy_file_name"
+  type  = "String"
+  value = "${var.annoy_file_name}"
 }
