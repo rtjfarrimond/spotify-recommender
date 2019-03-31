@@ -1,4 +1,4 @@
-#!/Users/rtjfarrimond/serverless/rest-api/spot-rec-service/api/venv/bin/python3
+#!/Users/rtjfarrimond/spotify-recommender/api/venv/bin/python3
 
 import sys
 import json

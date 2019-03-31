@@ -1,4 +1,4 @@
-#!/Users/rtjfarrimond/serverless/rest-api/spot-rec-service/api/venv/bin/python3
+#!/Users/rtjfarrimond/spotify-recommender/api/venv/bin/python3
 # -*- coding: utf8 -*-
 # :Copyright: © 2015 Günter Milde.
 # :License: Released under the terms of the `2-Clause BSD license`_, in short:
