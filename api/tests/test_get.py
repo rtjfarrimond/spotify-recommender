@@ -1,4 +1,5 @@
 from core.responses import *
+from core.settings import ANNOY_INDEX_COL
 from core.settings import DYNAMODB_TABLE_HASH_KEY
 from core.settings import DYNAMODB_TABLE_SORT_KEY
 from core.settings import FEATURE_COL
@@ -14,6 +15,7 @@ import pickle
 import random
 import string
 import unittest
+import uuid
 import warnings
 
 
@@ -56,6 +58,7 @@ class GetHandlerIntegrationTest(unittest.TestCase):
         self.dummy_item = {
             DYNAMODB_TABLE_HASH_KEY: self.track_id,
             DYNAMODB_TABLE_SORT_KEY: source,
+            ANNOY_INDEX_COL: uuid.uuid1().int>>114,
             FEATURE_COL: self.dummy_features
         }
         logger.info(f"Adding dummy record for {self.track_id}...")
