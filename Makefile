@@ -111,6 +111,3 @@ clean: init delete-cache
 
 init:
 	set -ex
-	sudo pip install --upgrade pip
-	sudo pip install awscli
-

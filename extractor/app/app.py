@@ -122,7 +122,7 @@ def extract_features(table_name, region, f_path, track):
         item = {
             "TrackId": track_id,
             "Source": "spotify",
-            "AnnoyIndex": int(uuid.uuid1().int>>114),
+            "AnnoyIndex": int(uuid.uuid1().int >> 114),
             "Title": track['title'],
             "Artists": track['artists'],
             "PreviewUrl": track['preview_url'],
