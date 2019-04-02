@@ -45,3 +45,15 @@ resource "aws_ssm_parameter" "feature_vector_length" {
   type  = "String"
   value = "${var.feature_vector_length}"
 }
+
+resource "aws_ssm_parameter" "annoy_index_col_name" {
+  name  = "/${var.system_code}/annoy_index_col_name"
+  type  = "String"
+  value = "${var.annoy_index_col_name}"
+}
+
+resource "aws_ssm_parameter" "feature_column_name" {
+  name  = "/${var.system_code}/feature_column_name"
+  type  = "String"
+  value = "${var.feature_column_name}"
+}

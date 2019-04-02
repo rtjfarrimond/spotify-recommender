@@ -26,6 +26,14 @@ variable "feature_vector_length" {
   default = "160"
 }
 
+variable "feature_column_name" {
+  default = "Features"
+}
+
+variable "annoy_index_col_name" {
+  default = "AnnoyIndex"
+}
+
 variable "vpc" {}
 variable "cidr_block" {}
 variable "subnet_id" {}

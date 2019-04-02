@@ -1,4 +1,5 @@
 from core.settings import DYNAMODB_TABLE
+from core.settings import ANNOY_INDEX_COL
 import boto3
 import json
 import logging
@@ -55,7 +56,9 @@ class DataFrameConstructor(object):
                 items = pickle.load(f)
 
         D = pd.DataFrame(items)
-        self.df = D.reset_index()
+        self.df = D.set_index(ANNOY_INDEX_COL)
+        logger.info(f"Built DataFrame with shape {self.df.shape}.")
+
 
     def get_dataframe(self):
         if not self.df:
