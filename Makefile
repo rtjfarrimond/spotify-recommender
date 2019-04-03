@@ -32,8 +32,12 @@ build-extractor: init
 # Deploy instructions
 ###############################################################################
 
-tag-extractor: init
+tag-extractor: init aws-cli
 	docker tag $(EXTRACTOR_IMAGE_NAME) $(EXTRACTOR_ECR_IMAGE_NAME)
+
+aws-cli: init
+	sudo pip3 install --upgrade pip
+	sudo pip3 install awscli
 
 # Used to save between CircleCI build and deploy phases.
 save-extractor: init tag-extractor
@@ -111,6 +115,3 @@ clean: init delete-cache
 
 init:
 	set -ex
-	sudo pip install --upgrade pip
-	sudo pip install awscli
-

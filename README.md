@@ -24,7 +24,10 @@ the [Spotify Web API](https://developer.spotify.com/documentation/web-api/).
 
 ## Database:
 * For storage and retrieval of unprocessed features extracted from audio files.
-* Key-value store: currently considering DynamoDB.
+* The `AnnoyIndex` item attribute is computed as a uuid1, bit shifted 114 bits
+  to the right. This ensures that the python int maps within the C 32 bit length
+  limit, whilst remaining unique, as the 14 rightmost bits are generated from the
+  time that the uuid is generated. See [the documentation](https://docs.python.org/2/library/uuid.html#uuid.uuid1) for more details.
 
 ## API:
 * Provide a GET endpoint to service recommendations following query by example.

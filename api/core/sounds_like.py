@@ -22,21 +22,12 @@ SEARCH_K = N_TREES * N * D
 METRIC = "angular"
 
 
-# TODO: Investigate if working properly, unit and integration tests.
 def deserialise_features(features):
-    try:
-        return pickle.loads(
-            bytes(features, encoding="ASCII"),
-            encoding="latin1"
-        )
-    except TypeError:
-        # Features are already bytes.
-        # TODO: Ensure features are always bytes and update this method.
-        if isinstance(features, Binary):
-            return pickle.loads(features.value, encoding="latin1")
-        else:
-            raise TypeError(
-                f"Expected string or Binary, got {type(features)}.")
+    if isinstance(features, Binary):
+        return pickle.loads(features.value, encoding="latin1")
+    else:
+        raise TypeError(
+            f"Expected string or Binary, got {type(features)}.")
 
 
 def process_features(features, target_variance=0.95):
@@ -55,12 +46,12 @@ def process_features(features, target_variance=0.95):
     --------
         pandas.DataFrame, design matrix of processed features.
     '''
-    logger.info(f"Processing features...")
+    logger.info(f"Processing features with shape {features.shape}...")
 
-    df_feats = pd.DataFrame(
-        {i: deserialise_features(s)
-         for i, s in features.iteritems()}
-    ).T
+    np_features = np.array([deserialise_features(f) for f in features])
+    df_feats = pd.DataFrame(np_features, index=features.index)
+    logger.info("After feature deserialisation, DataFrame has " +
+                f"shape {df_feats.shape}.")
 
     # Scale to zero mean, unit variance
     scaler = StandardScaler()
@@ -80,7 +71,7 @@ def process_features(features, target_variance=0.95):
     np_projection = np.array(projection).T
 
     logger.info(f"Returning projection with shape {np_projection.shape}...")
-    return pd.DataFrame(np_projection)
+    return pd.DataFrame(np_projection, index=features.index)
 
 
 def sounds_like(track_id, table_name, hash_key, feature_col):
@@ -120,13 +111,14 @@ def sounds_like(track_id, table_name, hash_key, feature_col):
     (nn_indices, dists) = index.get_nns_by_item(
         query_idx, N, search_k=SEARCH_K, include_distances=True)
 
-    filtered = df.iloc[nn_indices]
-    filtered['Distance'] = dists
-
     # logger.setLevel(logging.DEBUG)
     logger.debug(f"Query index: {query_idx}")
     logger.debug(f"Neighbour indices: {nn_indices}")
     logger.debug(f"Neighbour distances: {dists}")
+
+    filtered = df[df.index.isin(nn_indices)]
+    logger.info(f"Filtered shape: {filtered.shape}")
+    filtered['Distance'] = dists
 
     return filtered.drop(
         [feature_col], axis=1).to_json(orient='records')
