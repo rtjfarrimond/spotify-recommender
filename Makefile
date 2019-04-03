@@ -48,7 +48,7 @@ save-extractor: init tag-extractor
 load-extractor: init
 	docker load --input workspace/docker-image/image.tar || exit 0
 
-push-extractor: init load-extractor
+push-extractor: init aws-cli load-extractor
 	$(shell aws ecr get-login --no-include-email)
 	docker push ${AWS_ACCOUNT_ID}.dkr.ecr.$(AWS_REGION).amazonaws.com/$(EXTRACTOR_ECR_REPO)
 
