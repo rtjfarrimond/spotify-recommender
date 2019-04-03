@@ -17,6 +17,6 @@ class SpotifyDelegate(object):
     def track(self, track_id):
         return self.__sp.track(track_id)
 
-    def search(self, q, by):
-        return self.__sp.search(q=q, type=by)
+    def search(self, q, by, limit=10, offset=0):
+        return self.__sp.search(q=q, type=by, limit=limit, offset=offset)
 

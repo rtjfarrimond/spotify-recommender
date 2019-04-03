@@ -27,14 +27,25 @@ def get_known_track_id(with_preview=True):
     ''' Uses Spotify web api search endpoint to get existing track id.
     '''
     sp = SpotifyDelegate()
-    response = sp.search('love', 'track')
-    for track in response['tracks']['items']:
-        if with_preview and track['preview_url']:
-            logger.info(f"Returning {track['id']} with preview url.")
-            return track['id']
-        elif not with_preview and not track['preview_url']:
-            logger.info(f"Returning {track['id']} with no preview url.")
-            return track['id']
+    offset = 0
+    n = 10
+    response = sp.search('care', 'track', limit=n)
+
+    while offset <= 100:
+        for track in response['tracks']['items']:
+            if with_preview and track['preview_url']:
+                logger.info(f"Returning {track['id']} with preview url.")
+                return track['id']
+            elif not with_preview and not track['preview_url']:
+                logger.info(f"Returning {track['id']} with no preview url.")
+                return track['id']
+
+            # I still haven't found what I'm looking for.
+            out = "out" if not with_preview else ""
+            logger.info(
+                f"Track with{out} preview not found, fetching next {n}...")
+            offset += n
+            response = sp.search('love', 'track', limit=n, offset=offset)
     return False
 
 class MockSpotifyTrackDownloader(SpotifyTrackDownloader):
