@@ -16,7 +16,7 @@ resource "aws_dynamodb_table" "metadata_table" {
 
   attribute {
     name = "AnnoyIndex"
-    type = "S"
+    type = "N"
   }
 
   global_secondary_index {
