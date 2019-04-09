@@ -14,9 +14,14 @@ resource "aws_dynamodb_table" "metadata_table" {
     type = "S"
   }
 
+  attribute {
+    name = "AnnoyIndex"
+    type = "S"
+  }
+
   global_secondary_index {
-    name            = "source_index"
-    hash_key        = "Source"
+    name            = "annoy_index"
+    hash_key        = "AnnoyIndex"
     projection_type = "ALL"
   }
 

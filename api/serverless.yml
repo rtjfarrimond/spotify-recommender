@@ -30,6 +30,8 @@ provider:
   environment:
     TRACKS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dynamodb
     REGION: ${self:provider.region}
+    ANNOY_BUCKET_NAME: ${ssm:/${self:service}/annoy_bucket_name}
+    ANNOY_FILE_NAME: ${ssm:/${self:service}/annoy_file_name}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -39,6 +41,7 @@ provider:
         - dynamodb:PutItem
         - ssm:GetParameter
         - s3:PutObject
+        - s3:GetObject
       Resource: "*"
 
 # you can add statements to the Lambda function's IAM Role here

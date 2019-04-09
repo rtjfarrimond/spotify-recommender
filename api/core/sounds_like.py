@@ -1,13 +1,8 @@
 from annoy import AnnoyIndex
-from boto3.dynamodb.types import Binary
-from core.dataframe_constructor import DataFrameConstructor
-from sklearn.decomposition import PCA
-from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import StandardScaler
+import boto3
+import core.settings as settings
 import json
 import logging
-import numpy as np
-import pandas as pd
 import pickle
 import sys
 
@@ -16,62 +11,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 N = 10
-N_TREES = 128
+N_TREES = settings.N_TREES
 D = 100000
 SEARCH_K = N_TREES * N * D
-METRIC = "angular"
 
 
-def deserialise_features(features):
-    if isinstance(features, Binary):
-        return pickle.loads(features.value, encoding="latin1")
-    else:
-        raise TypeError(
-            f"Expected string or Binary, got {type(features)}.")
-
-
-def process_features(features, target_variance=0.95):
-    ''' Deserialise, normalise, and perform PCA projection.
-
-    Parameters:
-    -----------
-    features:
-        pandas.Series, each item in the series is an ASCII pickled
-        numpy.ndarray feature vector.
-
-    target_variance:
-        float, the target proportion of variance to retian in PCA projection.
-
-    Returns:
-    --------
-        pandas.DataFrame, design matrix of processed features.
+def fetch_annoy_index():
+    ''' Fetch annoy file from s3 and return index.
     '''
-    logger.info(f"Processing features with shape {features.shape}...")
+    dl_loc = '/tmp/annoy.ann'
+    bucket = settings.ANNOY_BUCKET_NAME
+    file = settings.ANNOY_FILE_NAME
+    index_ordinality = settings.ANNOY_VECTOR_LENGTH
 
-    np_features = np.array([deserialise_features(f) for f in features])
-    df_feats = pd.DataFrame(np_features, index=features.index)
-    logger.info("After feature deserialisation, DataFrame has " +
-                f"shape {df_feats.shape}.")
+    client = boto3.client('s3')
+    client.download_file(bucket, file, dl_loc)
 
-    # Scale to zero mean, unit variance
-    scaler = StandardScaler()
-    norm_feats = scaler.fit_transform(df_feats)
+    index = AnnoyIndex(index_ordinality)
+    index.load(dl_loc)
 
-    # Fit PCA
-    pca = PCA()
-    pca.fit_transform(norm_feats)
-
-    # Fit d to target variance
-    d = 1
-    while np.sum(pca.explained_variance_ratio_[:d]) < target_variance:
-        d += 1
-
-    logger.info(f"Projecting features to {d} dimensions...")
-    projection = [norm_feats.dot(pca.components_[i]) for i in range(d)]
-    np_projection = np.array(projection).T
-
-    logger.info(f"Returning projection with shape {np_projection.shape}...")
-    return pd.DataFrame(np_projection, index=features.index)
+    return index
 
 
 def sounds_like(track_id, table_name, hash_key, feature_col):
@@ -91,20 +50,7 @@ def sounds_like(track_id, table_name, hash_key, feature_col):
     '''
     logger.setLevel(logging.DEBUG)
 
-    # Get all metadata and features.
-    df = DataFrameConstructor(table_name, hash_key).get_dataframe()
-    projection = process_features(df[feature_col])
-
-    # Build ANNOY space
-    vector_len = projection.shape[1]
-    logger.info(f"Creating ANNOY space for vectors of length {vector_len}...")
-    index = AnnoyIndex(vector_len, metric=METRIC)
-
-    for i, val in projection.iterrows():
-        index.add_item(i, val.to_numpy())
-
-    logger.info(f"Building ANNOY space with {N_TREES} trees...")
-    index.build(N_TREES)
+    index = fetch_annoy_index()
 
     # Get near neighbours
     query_idx = df[hash_key][df[hash_key] == track_id].index[0]
