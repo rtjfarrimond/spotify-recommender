@@ -1,4 +1,6 @@
+from boto3.dynamodb.types import Binary
 from core.responses import *
+from core.settings import ANNOY_INDEX_COL
 from core.settings import DYNAMODB_TABLE_HASH_KEY
 from core.settings import DYNAMODB_TABLE_SORT_KEY
 from core.settings import FEATURE_COL
@@ -14,6 +16,7 @@ import pickle
 import random
 import string
 import unittest
+import uuid
 import warnings
 
 
@@ -56,7 +59,8 @@ class GetHandlerIntegrationTest(unittest.TestCase):
         self.dummy_item = {
             DYNAMODB_TABLE_HASH_KEY: self.track_id,
             DYNAMODB_TABLE_SORT_KEY: source,
-            FEATURE_COL: self.dummy_features
+            ANNOY_INDEX_COL: uuid.uuid1().int>>114,
+            FEATURE_COL: Binary(self.dummy_features)
         }
         logger.info(f"Adding dummy record for {self.track_id}...")
         self.table.put_item(Item=self.dummy_item)
@@ -97,6 +101,6 @@ class GetHandlerIntegrationTest(unittest.TestCase):
         }
         expected = 200
         response = get(dummy_event, '')
-        d_respnse = json.loads(response)
-        actual = d_respnse["statusCode"]
+        d_response = json.loads(response)
+        actual = d_response["statusCode"]
         self.assertEqual(expected, actual)

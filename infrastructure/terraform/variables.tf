@@ -30,6 +30,14 @@ variable "annoy_file_name" {
   default = "annoy.ann"
 }
 
+variable "feature_column_name" {
+  default = "Features"
+}
+
+variable "annoy_index_col_name" {
+  default = "AnnoyIndex"
+}
+
 variable "vpc" {}
 variable "cidr_block" {}
 variable "subnet_id" {}

@@ -15,6 +15,7 @@ import logging
 import os
 import pickle
 import settings
+import uuid
 
 
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +27,7 @@ N_INTERMITTENT = 100
 SR = 12000  # [Hz]
 LEN_SRC = 29.  # [second]
 ref_n_src = 12000 * 29
+
 
 if keras.__version__[0] != '1':
     raise RuntimeError('Keras version should be 1.x, maybe 1.2.2')
@@ -120,6 +122,7 @@ def extract_features(table_name, region, f_path, track):
         item = {
             "TrackId": track_id,
             "Source": "spotify",
+            "AnnoyIndex": int(uuid.uuid1().int >> 114),
             "Title": track['title'],
             "Artists": track['artists'],
             "PreviewUrl": track['preview_url'],
