@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: spot-rec-api
+service: spot-rec
 
 frameworkVersion: ">=1.1.0 <2.0.0"
 
@@ -28,10 +28,11 @@ provider:
   stage: dev
   region: eu-west-1
   environment:
-    TRACKS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-dynamodb
+    TRACKS_TABLE: ${ssm:/${self:service}/dynamodb}
     REGION: ${self:provider.region}
     ANNOY_BUCKET_NAME: ${ssm:/${self:service}/annoy_bucket_name}
     ANNOY_FILE_NAME: ${ssm:/${self:service}/annoy_file_name}
+    DYNAMO_ANNOY_INDEX_NAME: ${ssm:/${self:service}/dynamo_annoy_index_name}
   iamRoleStatements:
     - Effect: Allow
       Action:

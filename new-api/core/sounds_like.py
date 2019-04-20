@@ -1,6 +1,7 @@
 from annoy import AnnoyIndex
 from boto3.dynamodb.types import Binary
 from core.dataframe_constructor import DataFrameConstructor
+from core.dynamo_table import DynamoTable
 from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
@@ -27,7 +28,7 @@ def deserialise_features(features):
         return pickle.loads(features.value, encoding="latin1")
     else:
         raise TypeError(
-            f"Expected string or Binary, got {type(features)}.")
+            f"Expected features with type Binary, got {type(features)}.")
 
 
 def process_features(features, target_variance=0.95):
@@ -74,6 +75,28 @@ def process_features(features, target_variance=0.95):
     return pd.DataFrame(np_projection, index=features.index)
 
 
+def write_projection(df, projection, table_name, hash_key):
+    logger.info(f"Writing projection vectors to DynamoDB...")
+    table = DynamoTable(table_name)
+
+    row_iterator = df.iterrows()
+    for i, row in row_iterator:
+        pkl_feats = pickle.dumps(projection.loc[i].to_numpy(), protocol=0)
+
+        key = {hash_key: row[hash_key], "Source": row["Source"]}
+        attribute_updates = {
+            "AnnoyVector": {
+                'Value': Binary(pkl_feats),
+                'Action': "PUT"
+            }
+        }
+
+        logger.debug(f"Key: {key}")
+        logger.debug(f"AttributeUpadates: {attribute_updates}")
+
+        table.update_item(key, attribute_updates)
+
+
 def sounds_like(track_id, table_name, hash_key, feature_col):
     ''' Sounds like search using the given query track id.
 
@@ -89,11 +112,13 @@ def sounds_like(track_id, table_name, hash_key, feature_col):
     --------
         string, json representation of the retrieved tracks.
     '''
-    logger.setLevel(logging.DEBUG)
+    # logger.setLevel(logging.DEBUG)
 
     # Get all metadata and features.
     df = DataFrameConstructor(table_name, hash_key).get_dataframe()
     projection = process_features(df[feature_col])
+
+    write_projection(df, projection, table_name, hash_key)
 
     # Build ANNOY space
     vector_len = projection.shape[1]
@@ -101,17 +126,19 @@ def sounds_like(track_id, table_name, hash_key, feature_col):
     index = AnnoyIndex(vector_len, metric=METRIC)
 
     for i, val in projection.iterrows():
+        logger.debug(f"Adding index {i}...")
         index.add_item(i, val.to_numpy())
 
     logger.info(f"Building ANNOY space with {N_TREES} trees...")
     index.build(N_TREES)
+
+    index.save('/tmp/annoy.ann')
 
     # Get near neighbours
     query_idx = df[hash_key][df[hash_key] == track_id].index[0]
     (nn_indices, dists) = index.get_nns_by_item(
         query_idx, N, search_k=SEARCH_K, include_distances=True)
 
-    # logger.setLevel(logging.DEBUG)
     logger.debug(f"Query index: {query_idx}")
     logger.debug(f"Neighbour indices: {nn_indices}")
     logger.debug(f"Neighbour distances: {dists}")

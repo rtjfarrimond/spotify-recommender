@@ -1,11 +1,11 @@
 import json
 
 
-def to_json_string(status_code, body):
-    return json.dumps({
+def make_response(status_code, body):
+    return {
         "statusCode": status_code,
-        "body": body
-    })
+        "body": json.dumps(body)
+    }
 
 
 def response_200_get_success(event, track_id, results):
@@ -15,17 +15,16 @@ def response_200_get_success(event, track_id, results):
         "results": results
     }
 
-    return to_json_string(200, body)
+    return make_response(200, body)
 
 
 def response_200_put_exists(event, track_id, item):
     body = {
         "message": f"Item with id {track_id} already exists.",
-        "item": item,
         "input": event
     }
 
-    return to_json_string(200, body)
+    return make_response(200, body)
 
 def response_202(event, track_id):
     body = {
@@ -33,7 +32,7 @@ def response_202(event, track_id):
         "input": event
     }
 
-    return to_json_string(202, body)
+    return make_response(202, body)
 
 
 def response_204(event, track_id):
@@ -42,7 +41,7 @@ def response_204(event, track_id):
         "input": event
     }
 
-    return to_json_string(204, body)
+    return make_response(204, body)
 
 
 def response_400(event):
@@ -51,7 +50,7 @@ def response_400(event):
         "input": event
     }
 
-    return to_json_string(400, body)
+    return make_response(400, body)
 
 
 def response_404(event, track_id):
@@ -60,7 +59,7 @@ def response_404(event, track_id):
         "input": event
     }
 
-    return to_json_string(404, body)
+    return make_response(404, body)
 
 
 def response_500(event):
@@ -69,4 +68,4 @@ def response_500(event):
         "input": event
     }
 
-    return to_json_string(500, body)
+    return make_response(500, body)

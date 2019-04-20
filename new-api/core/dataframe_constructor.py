@@ -1,3 +1,4 @@
+from core.dynamo_table import DynamoTable
 from core.settings import DYNAMODB_TABLE
 from core.settings import ANNOY_INDEX_COL
 import boto3
@@ -20,16 +21,14 @@ class DataFrameConstructor(object):
     def __init__(self, table_name, hash_key):
         self.table_name = table_name
         self.hash_key = hash_key
+        self.table = DynamoTable(self.table_name)
 
     def fetch_all(self):
-        # TODO: Refactor below to use a DynamoDB object.
-        dynamodb = boto3.resource('dynamodb', region_name="eu-west-1")
-        table = dynamodb.Table(self.table_name)
         items = []
         last_evaluated_key = None
         page = 1
         logger.info(f"Fetching page {page}...")
-        response = table.scan()
+        response = self.table.scan()
 
         while True:
             try:
@@ -37,7 +36,7 @@ class DataFrameConstructor(object):
                 last_evaluated_key = response['LastEvaluatedKey']
                 page += 1
                 logger.info(f"Fetching page {page}...")
-                response = table.scan(ExclusiveStartKey=last_evaluated_key)
+                response = self.table.scan(exclusive_start_key=last_evaluated_key)
             except KeyError:
                 break
 

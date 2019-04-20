@@ -12,3 +12,6 @@ test-local: init clean
 
 test-ci: init clean
 	pipenv run python -m unittest discover
+
+run: init
+	python app.py | jq '.'
