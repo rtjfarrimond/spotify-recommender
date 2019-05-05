@@ -6,6 +6,8 @@ import os
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# TODO: Refactor this module to an object with validation.
+
 
 def __get_parameter(name):
     if not name or name == "":
@@ -26,6 +28,7 @@ DYNAMODB_TABLE_SORT_KEY = __get_parameter('dynamodb_sort_key_name')
 AUDIO_UPLOAD_BUCKET = __get_parameter('audio_bucket_name')
 FEATURE_COL = __get_parameter('feature_column_name')
 FEATURE_VECTOR_LENGTH = int(__get_parameter('feature_vector_length'))
+ANNOY_VECTOR_LENGTH = int(__get_parameter('annoy_vector_length'))
 ANNOY_INDEX_COL = __get_parameter('annoy_index_col_name')
 
 DYNAMODB_TABLE = os.getenv("TRACKS_TABLE", None)
