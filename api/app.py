@@ -1,3 +1,4 @@
+from core.dynamo_table import DynamoTable
 from core.responses import *
 from core.sounds_like import sounds_like
 from core.spotify_track_downloader import SpotifyTrackDownloader
@@ -107,14 +108,21 @@ def get(event, context):
 
     track_id = event["queryStringParameters"][TRACK_ID_PARAM]
     logger.info(f"Checking for TrackId=={track_id} in database...")
-    item = fetch_item_from_db(track_id)
+    table = DynamoTable(TABLE_NAME)
+    key={DYNAMO_HASH: track_id, DYNAMO_SORT: 'spotify'}
+    query_item = table.get_item(key)
 
-    if not item:
+    if not query_item:
         logger.info(f"TrackId=={track_id} not in database, returning 404.")
         return response_404(event, track_id)
     else:
+        logger.info(f"Confirmed TrackId=={track_id} exists in db.")
         results = sounds_like(
-            track_id, TABLE_NAME, DYNAMO_HASH, FEATURE_COL)
+            table,
+            query_item,
+            settings.DYNAMO_ANNOY_INDEX_NAME,
+            settings.ANNOY_INDEX_COL
+        )
         logger.info(f"Got sounds like results for {track_id}, returning 200.")
         return response_200_get_success(event, track_id, json.loads(results))
 

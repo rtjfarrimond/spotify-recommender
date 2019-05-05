@@ -36,7 +36,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/rtjfarrimond/serverless/rest-api/spot-rec-service/api/venv"
+set -gx VIRTUAL_ENV "/Users/rtjfarrimond/spotify-recommender/api/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

@@ -26,6 +26,10 @@ variable "feature_vector_length" {
   default = "160"
 }
 
+variable "annoy_file_name" {
+  default = "annoy.ann"
+}
+
 variable "feature_column_name" {
   default = "Features"
 }

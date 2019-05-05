@@ -1,0 +1,14 @@
+{
+  "name": "spot-rec-service",
+  "version": "1.0.0",
+  "description": "An API for content based similarity search of music reqcordings using a Spotify track ID as a query document.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Robert Farrimond",
+  "license": "MIT",
+  "dependencies": {
+    "serverless-python-requirements": "^4.3.0"
+  }
+}

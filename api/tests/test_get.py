@@ -5,6 +5,8 @@ from core.settings import DYNAMODB_TABLE_HASH_KEY
 from core.settings import DYNAMODB_TABLE_SORT_KEY
 from core.settings import FEATURE_COL
 from core.settings import FEATURE_VECTOR_LENGTH
+from core.settings import ANNOY_VECTOR_LENGTH
+from core.settings import DYNAMO_ANNOY_VECTOR_COL
 from app import get
 from app import TABLE_NAME
 from app import TRACK_ID_PARAM
@@ -22,7 +24,6 @@ import warnings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 # TODO: Hard coded to spotify until we properly support multiple sources.
 source = "spotify"
@@ -42,8 +43,8 @@ def get_random_id():
 
 class GetHandlerIntegrationTest(unittest.TestCase):
 
-    def get_dummy_features(self):
-        a = np.random.rand(FEATURE_VECTOR_LENGTH)
+    def get_random_vector(self, length):
+        a = np.random.rand(length)
         return pickle.dumps(a, protocol=0)
 
     def setUp(self):
@@ -55,12 +56,14 @@ class GetHandlerIntegrationTest(unittest.TestCase):
         self.dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
         self.table = self.dynamodb.Table(TABLE_NAME)
         self.track_id = get_random_id()
-        self.dummy_features = self.get_dummy_features()
+        self.dummy_features = self.get_random_vector(FEATURE_VECTOR_LENGTH)
+        self.dummy_annoy_vector = self.get_random_vector(ANNOY_VECTOR_LENGTH)
         self.dummy_item = {
             DYNAMODB_TABLE_HASH_KEY: self.track_id,
             DYNAMODB_TABLE_SORT_KEY: source,
             ANNOY_INDEX_COL: uuid.uuid1().int>>114,
-            FEATURE_COL: Binary(self.dummy_features)
+            FEATURE_COL: Binary(self.dummy_features),
+            DYNAMO_ANNOY_VECTOR_COL: Binary(self.dummy_annoy_vector)
         }
         logger.info(f"Adding dummy record for {self.track_id}...")
         self.table.put_item(Item=self.dummy_item)
@@ -101,6 +104,5 @@ class GetHandlerIntegrationTest(unittest.TestCase):
         }
         expected = 200
         response = get(dummy_event, '')
-        d_response = json.loads(response)
-        actual = d_response["statusCode"]
+        actual = response["statusCode"]
         self.assertEqual(expected, actual)

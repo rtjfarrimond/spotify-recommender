@@ -1,13 +1,11 @@
 from annoy import AnnoyIndex
 from boto3.dynamodb.types import Binary
-from core.dataframe_constructor import DataFrameConstructor
-from sklearn.decomposition import PCA
-from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import StandardScaler
+from functools import partial
+import boto3
+import core.settings as settings
 import json
 import logging
 import numpy as np
-import pandas as pd
 import pickle
 import sys
 
@@ -16,10 +14,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 N = 10
-N_TREES = 128
+N_TREES = settings.N_TREES
 D = 100000
 SEARCH_K = N_TREES * N * D
-METRIC = "angular"
 
 
 def deserialise_features(features):
@@ -27,54 +24,30 @@ def deserialise_features(features):
         return pickle.loads(features.value, encoding="latin1")
     else:
         raise TypeError(
-            f"Expected string or Binary, got {type(features)}.")
+            f"Expected features with type Binary, got {type(features)}.")
 
 
-def process_features(features, target_variance=0.95):
-    ''' Deserialise, normalise, and perform PCA projection.
-
-    Parameters:
-    -----------
-    features:
-        pandas.Series, each item in the series is an ASCII pickled
-        numpy.ndarray feature vector.
-
-    target_variance:
-        float, the target proportion of variance to retian in PCA projection.
-
-    Returns:
-    --------
-        pandas.DataFrame, design matrix of processed features.
+def fetch_annoy_space():
+    ''' Fetch annoy file from s3 and return annoy_space.
     '''
-    logger.info(f"Processing features with shape {features.shape}...")
+    dl_loc = '/tmp/annoy.ann'
+    bucket = settings.ANNOY_BUCKET_NAME
+    file = settings.ANNOY_FILE_NAME
+    ordinality = settings.ANNOY_VECTOR_LENGTH
+    logger.info(f"Vector length: {ordinality}")
 
-    np_features = np.array([deserialise_features(f) for f in features])
-    df_feats = pd.DataFrame(np_features, index=features.index)
-    logger.info("After feature deserialisation, DataFrame has " +
-                f"shape {df_feats.shape}.")
+    client = boto3.client('s3')
+    logger.info(f"Downloading {file} from S3 bucket {bucket}...")
+    client.download_file(bucket, file, dl_loc)
 
-    # Scale to zero mean, unit variance
-    scaler = StandardScaler()
-    norm_feats = scaler.fit_transform(df_feats)
+    logger.info(f"Loading retrieved {file}...")
+    annoy_space = AnnoyIndex(ordinality, metric="angular")
+    annoy_space.load(dl_loc)
 
-    # Fit PCA
-    pca = PCA()
-    pca.fit_transform(norm_feats)
-
-    # Fit d to target variance
-    d = 1
-    while np.sum(pca.explained_variance_ratio_[:d]) < target_variance:
-        d += 1
-
-    logger.info(f"Projecting features to {d} dimensions...")
-    projection = [norm_feats.dot(pca.components_[i]) for i in range(d)]
-    np_projection = np.array(projection).T
-
-    logger.info(f"Returning projection with shape {np_projection.shape}...")
-    return pd.DataFrame(np_projection, index=features.index)
+    return annoy_space
 
 
-def sounds_like(track_id, table_name, hash_key, feature_col):
+def sounds_like(table, query_item, dyanmo_annoy_index_name, annoy_col_name):
     ''' Sounds like search using the given query track id.
 
     This function requires that the value of `track_id` be one that
@@ -82,57 +55,44 @@ def sounds_like(track_id, table_name, hash_key, feature_col):
 
     Parameters:
     -----------
-    track_id:
-        string, the (Spotify) track id of the query song.
+    table:
+        core.DynamoTable, from which to get tracks by ANNOY index.
+
+    query_item:
+        string, json representation of the query document from DynamoDB.
+
+    dyanmo_annoy_index_name:
+        string, the name of the ANNOY index of the DynamoDB table.
+
+    annoy_col_name
+        string, the name of the ANNOY id column in DynamoDB.
 
     Returns:
     --------
         string, json representation of the retrieved tracks.
     '''
     logger.setLevel(logging.DEBUG)
+    query_id = query_item['TrackId']
+    logger.info(f"Table: {table}")
+    logger.info(f"Query id: {query_id}")
+    logger.info(f"DynamoDB index name: {dyanmo_annoy_index_name}")
+    logger.info(f"DyanmoDB ANNOY column: {annoy_col_name}")
 
-    # Get all metadata and features.
-    df = DataFrameConstructor(table_name, hash_key).get_dataframe()
-    projection = process_features(df[feature_col])
+    annoy_space = fetch_annoy_space()
+    logger.info(f"Fetching near neighbours for query {query_id}...")
+    vector = deserialise_features(query_item[settings.DYNAMO_ANNOY_VECTOR_COL])
+    (nn_indices, dists) = annoy_space.get_nns_by_vector(
+        vector, N, search_k=SEARCH_K, include_distances=True)
 
-    # Build ANNOY space
-    vector_len = projection.shape[1]
-    logger.info(f"Creating ANNOY space for vectors of length {vector_len}...")
-    index = AnnoyIndex(vector_len, metric=METRIC)
-
-    for i, val in projection.iterrows():
-        index.add_item(i, val.to_numpy())
-
-    logger.info(f"Building ANNOY space with {N_TREES} trees...")
-    index.build(N_TREES)
-
-    # Get near neighbours
-    query_idx = df[hash_key][df[hash_key] == track_id].index[0]
-    (nn_indices, dists) = index.get_nns_by_item(
-        query_idx, N, search_k=SEARCH_K, include_distances=True)
-
-    # logger.setLevel(logging.DEBUG)
-    logger.debug(f"Query index: {query_idx}")
+    # logger.debug(f"Query index: {annoy_index}")
     logger.debug(f"Neighbour indices: {nn_indices}")
     logger.debug(f"Neighbour distances: {dists}")
 
-    filtered = df[df.index.isin(nn_indices)]
-    logger.info(f"Filtered shape: {filtered.shape}")
-    filtered['Distance'] = dists
+    get_annoy_track = partial(
+        table.get_item_from_index,
+        dyanmo_annoy_index_name,
+        annoy_col_name
+    )
 
-    return filtered.drop(
-        [feature_col], axis=1).to_json(orient='records')
-
-
-if __name__ == '__main__':
-    # Default query id is for 'Foo Fighters - Everlong'
-    query = "07q6QTQXyPRCf7GbLakRPr"
-    if len(sys.argv) == 1:
-        logger.info(f"Querying with default track id {query}...")
-    else:
-        query = sys.argv[1]
-    table_name = "spot-rec-audio-metadata"
-    hash_key = "TrackId"
-    feature_col = "Features"
-    json = sounds_like(query, table_name, hash_key, feature_col)
-    print(json)
+    tracks = [json.dumps(get_annoy_track(nn)) for nn in nn_indices]
+    return f"[{','.join(tracks)}]"

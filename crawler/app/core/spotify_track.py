@@ -32,12 +32,15 @@ class SpotifyTrack(object):
         if not self.preview_url:
             raise ValueError('Track does not define a preview_url.')
 
-        logger.info(f'Downloading preview for: {self}')
-        filename = f"{self.spotify_id}.mp3"
-        audio_path = f'/tmp/{filename}'
-        urllib.request.urlretrieve(
-            self.preview_url,
-            audio_path)
+        try:
+            logger.info(f'Downloading preview for: {self}')
+            filename = f"{self.spotify_id}.mp3"
+            audio_path = f'/tmp/{filename}'
+            urllib.request.urlretrieve(
+                self.preview_url,
+                audio_path)
+        except urllib.error.URLError as urle:
+            logger.warn(f"URLError when downloading:\n {urle}")
 
     def get_artists_string(self):
         if not self.artists:
